@@ -1,5 +1,3 @@
-# encoding = utf-8
-
 import sys
 import time
 import datetime
@@ -7,18 +5,9 @@ import calendar
 import json
 import requests
 
+
 def collect_events(helper, ew):
     """Main function to get data into Splunk"""
-
-    def split_lat(series):
-        """Return latitude for series."""
-        lat = series[0]
-        return lat
-
-    def split_long(series):
-        """Return longitude for series."""
-        long = series[1]
-        return long
 
     def get_start_time(activity, token):
         params = {'access_token': token}
@@ -71,7 +60,7 @@ def collect_events(helper, ew):
         payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "weight": weight, "ftp": ftp}]
         helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False)
 
-    def parse_data(data, types, activity_id, activity_start_date):
+    def parse_data(data, activity_id, activity_start_date):
         data_dict = {}
 
         # cater for latlng, split those
@@ -81,8 +70,8 @@ def collect_events(helper, ew):
 
         counter = 1
         nrange = len(data_dict['time'])
-        for x in range(1, nrange + 1):
-            final_dict[x] = {}
+        for item in range(1, nrange + 1):
+            final_dict[item] = {}
 
         for k, v in data_dict.items():
             counter = 1
@@ -104,6 +93,8 @@ def collect_events(helper, ew):
 
         for event in result_list:
             write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=json.dumps(event))
+
+        return True
 
     def get_token(client_id, client_secret, token, renewal):
         """Get or refresh access token from Strava API"""
@@ -183,6 +174,7 @@ def collect_events(helper, ew):
         return athlete
 
     def write_to_splunk(**kwargs):
+        """Writes activity to Splunk index"""
         event = helper.new_event(**kwargs)
         ew.write_event(event)
 
@@ -297,19 +289,18 @@ def collect_events(helper, ew):
 
                     # Get start_date (UTC) and convert to UTC timestamp
                     timestamp = event['start_date']
-                    dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                    ts_activity = calendar.timegm(dt.timetuple())
+                    timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+                    ts_activity = calendar.timegm(timestamp_dt.timetuple())
                     ts_activity = int(ts_activity)
 
                     # Store the event in Splunk
                     write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
                     helper.log_info(f'Added activity {activity_id} for {athlete_id}.')
 
-
                     # Get stream data for this activity
                     stream_data = get_activity_stream(access_token, activity_id, types)
                     if stream_data:
-                        parsed_data = parse_data(stream_data, types, activity_id, ts_activity)
+                        parsed_data = parse_data(stream_data, activity_id, ts_activity)
                         helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
 
                     download_tcx_id[athlete_id].append(activity_id)
@@ -329,7 +320,7 @@ def collect_events(helper, ew):
             helper.log_info(f'Getting stream for activity {activity_id}')
             stream_data = get_activity_stream(access_token, activity_id, types)
             if stream_data:
-                parsed_data = parse_data(stream_data, types, activity_id, activity_start_date)
+                parsed_data = parse_data(stream_data, activity_id, activity_start_date)
                 write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=parsed_data)
                 helper.log_info(f'Added activity stream for activity {activity_id} to Splunk')
             else:
