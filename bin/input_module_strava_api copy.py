@@ -7,6 +7,17 @@ import calendar
 import json
 import requests
 
+import exec_anaconda
+exec_anaconda.exec_anaconda()
+
+# Gracefully handle missing pandas module
+try:
+    import pandas as pd
+    HAS_PANDAS = True
+except ImportError:
+    HAS_PANDAS = False
+
+
 def collect_events(helper, ew):
     """Main function to get data into Splunk"""
 
@@ -74,36 +85,34 @@ def collect_events(helper, ew):
     def parse_data(data, types, activity_id, activity_start_date):
         data_dict = {}
 
-        # cater for latlng, split those
-        final_dict = {}
         for i in data:
             data_dict[i['type']] = i['data']
 
-        counter = 1
-        nrange = len(data_dict['time'])
-        for x in range(1, nrange + 1):
-            final_dict[x] = {}
+        df = pd.DataFrame()
 
-        for k, v in data_dict.items():
-            counter = 1
-            for i in v:
-                final_dict[counter][k] = i
-                final_dict[counter]['activity_id'] = activity_id
+        helper.log_debug(f'Activity {activity_id} types: {data_dict.keys()}')
 
-                if 'time' in k:
-                    final_dict[counter]['time'] = final_dict[counter]['time'] + activity_start_date  # + final_dict[counter]['time']
-                    final_dict[counter]['time'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(final_dict[counter]['time']))
+        for item in types:
+            if item in data_dict.keys():
+                df[item] = pd.Series(data_dict[item])
+                pd.to_datetime(1490195805, unit='s')
 
-                if 'latlng' in k:
-                    final_dict[counter]['lat'] = final_dict[counter]['latlng'][0]
-                    final_dict[counter]['lon'] = final_dict[counter]['latlng'][1]
-                    final_dict[counter].pop('latlng')
-                counter += 1
+        df['time'] = pd.to_datetime(df['time'], format='%Y-%m-%dT%H:%M:%S%Z',unit='s')
+        #epoch = int(df['time'])
+        #2019-10-12T07:20:50.52Z
+        #2017-05-08T19:25:19Z
+        #df['proper_time'] = time.strftime('%Y-%M-%dT%H:%M:%SZ', time.gmtime(epoch))
+        df['activity_id'] = activity_id
+        if 'latlng' in df:
+            df['lat'] = list(map(split_lat, (df['latlng'])))
+            df['lon'] = list(map(split_long, (df['latlng'])))
+            df.drop(['latlng'], axis=1, inplace=True)
 
-        result_list = [final_dict[x] for x in final_dict]
-
-        for event in result_list:
-            write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=json.dumps(event))
+        # result = df.to_json(orient='records', lines=True)
+        result = df.to_json(orient='records', lines=True)
+        #result_json = json.loads(result)
+        #result_json = json.dumps(result_json)
+        return result
 
     def get_token(client_id, client_secret, token, renewal):
         """Get or refresh access token from Strava API"""
@@ -185,6 +194,9 @@ def collect_events(helper, ew):
     def write_to_splunk(**kwargs):
         event = helper.new_event(**kwargs)
         ew.write_event(event)
+
+    # set Splunk host
+    # host = "strava_for_splunk"
 
     # get configuration arguments
     client_id = helper.get_global_setting('client_id')
@@ -294,6 +306,7 @@ def collect_events(helper, ew):
                     continue
                 else:
                     data = json.dumps(response)
+                    helper.log_info(f'Retrieved activity {activity_id} for {athlete_id}')
 
                     # Get start_date (UTC) and convert to UTC timestamp
                     timestamp = event['start_date']
@@ -303,36 +316,42 @@ def collect_events(helper, ew):
 
                     # Store the event in Splunk
                     write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
-                    helper.log_info(f'Added activity {activity_id} for {athlete_id}.')
-
 
                     # Get stream data for this activity
-                    stream_data = get_activity_stream(access_token, activity_id, types)
-                    if stream_data:
-                        parsed_data = parse_data(stream_data, types, activity_id, ts_activity)
-                        helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
-
-                    download_tcx_id[athlete_id].append(activity_id)
-                    helper.save_check_point("download_tcx_id", download_tcx_id)
+                    if HAS_PANDAS:
+                        stream_data = get_activity_stream(access_token, activity_id, types)
+                        if stream_data:
+                            parsed_data = parse_data(stream_data, types, activity_id, ts_activity)
+                            helper.log_info("DATA")
+                            helper.log_info(parsed_data)
+                            write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=parsed_data)
+                            helper.log_info(f'Added activity stream {activity_id} to Splunk')
+                    else:
+                        # If not HAS_PANDAS, append checkpoint that tracks which streams need to be downloaded in case PSC gets installed at a later date.
+                        download_tcx_id[athlete_id].append(activity_id)
+                        helper.save_check_point("download_tcx_id", download_tcx_id)
 
                     # Save the timestamp of the last event to a checkpoint
                     athlete.update({'ts_activity': ts_activity})
                     helper.save_check_point(stanza, athlete)
 
-    list_activities = helper.get_check_point("download_tcx_id") or {}
+    if HAS_PANDAS:
+        # Users upgrading from < 3.0 will have 'old' activities to download, so instead of doing it for one activity (as above) this will download streams for old activities.
+        # When done, the 'download_tcx_id' checkpoint should be empty and this block will be redundant.
+        list_activities = helper.get_check_point("download_tcx_id") or {}
 
-    athlete_id = str(athlete_id)
-    if athlete_id in list_activities:
-        for activity_id in list_activities[athlete_id][:]:
-            # Additional API call to get the start date of the activity, needs to be included in the stream data.
-            activity_start_date = get_start_time(activity_id, access_token)
-            helper.log_info(f'Getting stream for activity {activity_id}')
-            stream_data = get_activity_stream(access_token, activity_id, types)
-            if stream_data:
-                parsed_data = parse_data(stream_data, types, activity_id, activity_start_date)
-                write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=parsed_data)
-                helper.log_info(f'Added activity stream for activity {activity_id} to Splunk')
-            else:
-                helper.log_info(f'No activity stream for activity {activity_id}')
-            list_activities[athlete_id].remove(activity_id)
-            helper.save_check_point("download_tcx_id", list_activities)
+        athlete_id = str(athlete_id)
+        if athlete_id in list_activities:
+            for activity_id in list_activities[athlete_id][:]:
+                # Additional API call to get the start date of the activity, needs to be included in the stream data.
+                activity_start_date = get_start_time(activity_id, access_token)
+                helper.log_info(f'Getting stream for activity {activity_id}')
+                stream_data = get_activity_stream(access_token, activity_id, types)
+                if stream_data:
+                    parsed_data = parse_data(stream_data, types, activity_id, activity_start_date)
+                    write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=parsed_data)
+                    helper.log_info(f'Added activity stream for activity {activity_id} to Splunk')
+                else:
+                    helper.log_info(f'No activity stream for activity {activity_id}')
+                list_activities[athlete_id].remove(activity_id)
+                helper.save_check_point("download_tcx_id", list_activities)
