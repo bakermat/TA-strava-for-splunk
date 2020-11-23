@@ -254,9 +254,9 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name
         helper.log_info(f"Found existing timestamp {athlete['ts_newest_activity']}! Will remove it now.")
         ts_activity = athlete['ts_newest_activity']
         athlete.update({'ts_activity': ts_activity})
-        del athlete['ts_newest_activity']
-        del athlete['get_old_activities']
-        del athlete['ts_oldest_activity']
+        athlete.pop('ts_newest_activity')
+        athlete.pop('get_old_activities')
+        athlete.pop('ts_oldest_activity')
         helper.save_check_point(stanza, athlete)
     else:
         ts_activity = athlete['ts_activity'] or start_time
