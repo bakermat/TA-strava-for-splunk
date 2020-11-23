@@ -6,7 +6,14 @@ import json
 import requests
 
 
-def collect_events(helper, ew):  # pylint: disable=invalid-name
+# pylint: disable=unused-argument,unnecessary-pass
+def validate_input(helper, definition):
+    """Implement your own validation logic to validate the input stanza configurations"""
+    pass
+# pylint: enable=unused-argument,unnecessary-pass
+
+
+def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-statements,too-many-branches
     """Main function to get data into Splunk."""
 
     def get_start_time(activity, token):
@@ -69,7 +76,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name
         response = return_json(url, "GET", parameters=params, timeout=10)
         return response
 
-    def kvstore_save_athlete(session_key, athlete_id, firstname, lastname, weight, ftp):
+    def kvstore_save_athlete(session_key, athlete_id, firstname, lastname, weight, ftp):  # pylint: disable=too-many-arguments
         """Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
         url = 'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/storage/collections/data/strava_athlete/batch_save'
         headers = {'Content-Type': 'application/json', 'Authorization': f'Splunk {session_key}'}
@@ -219,8 +226,8 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name
         expires_at = athlete['expires_at']
         refresh_token = athlete['refresh_token']
     else:
-        expires_at = ""
-        refresh_token = ""
+        expires_at = False
+        refresh_token = False
 
     # Check if expires_at token is set and renew token if token expired. Otherwise fetch token with initial access code.
     if expires_at:

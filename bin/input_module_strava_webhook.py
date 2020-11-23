@@ -1,35 +1,33 @@
 # encoding = utf-8
 
-try:
-    # Python 2
-    from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-    from urlparse import parse_qs, urlparse
-except ImportError:
-    # Python 3
-    from http.server import BaseHTTPRequestHandler, HTTPServer
-    from urllib.parse import parse_qs, urlparse
-    unicode = str
-
 import json
 import ssl
-import requests
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import parse_qs, urlparse
 from threading import Thread
+import requests
+
+unicode = str  # pylint: disable=invalid-name
 
 
+# pylint: disable=unused-argument,unnecessary-pass
 def validate_input(helper, definition):
     """Implement your own validation logic to validate the input stanza configurations"""
     pass
+# pylint: enable=unused-argument,unnecessary-pass
 
 
-def collect_events(helper, ew):
+def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-statements
+    """Main function to get webhook data into Splunk"""
 
-    # This class will handles any incoming request from the browser
     class SimpleHTTPRequestHandler(BaseHTTPRequestHandler):
+        """Handles incoming requests from the browser"""
 
-        session_key = helper.context_meta['session_key']
-        host = 'strava_for_splunk'
+        SESSION_KEY = helper.context_meta['session_key']
+        SSL_VERIFY = False
 
         def handle_request(self):
+            """Parses incoming POST, saves as checkpoint and sends data to Splunk"""
             try:
                 content_type = self.headers.get('content-type')
 
@@ -46,7 +44,7 @@ def collect_events(helper, ew):
                     self.write_empty_response(400)
                     return
 
-                helper.log_info("Incoming POST from {}: {}".format(self.client_address[0], message))
+                helper.log_info(f'Incoming POST from {self.client_address[0]}: {message}')
 
                 aspect_type = message['aspect_type']
                 object_id = message['object_id']
@@ -65,11 +63,11 @@ def collect_events(helper, ew):
                     else:
                         athlete_checkpoint[owner_id].append(object_id)
                         helper.save_check_point("webhook_updates", athlete_checkpoint)
-                    helper.log_debug("webhooks_updates checkpoint: {}".format(helper.get_check_point("webhook_updates")))
+                    helper.log_debug(f'webhooks_updates checkpoint: {helper.get_check_point("webhook_updates")}')
 
                 # Send data to Splunk
                 data = json.dumps(message)
-                event = helper.new_event(source=helper.get_input_type(), host=self.host, index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
+                event = helper.new_event(source=helper.get_input_type(), index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
                 ew.write_event(event)
 
                 # Strava API expects a 200 response
@@ -77,17 +75,18 @@ def collect_events(helper, ew):
 
                 # Restart strava_api inputs to pull in the data unless it's a delete, as the input doesn't do anything with that anyway.
                 if aspect_type != 'delete':
-                    self.restart_input('strava_api', self.session_key)
-                    helper.log_info("Reloading Strava API input to retrieve updated activity {} for athlete {}.".format(object_id, owner_id))
+                    self.restart_input('strava_api', self.SESSION_KEY)
+                    helper.log_info(f'Reloading Strava API input to retrieve updated activity {object_id} for athlete {owner_id}.')
 
-            except Exception as e:
-                helper.log_error("Something went wrong in handle request: {}".format(e))
+            except Exception as ex:
+                helper.log_error(f'Something went wrong in handle request: {ex}')
 
-        def do_GET(self):
-            parsedURL = urlparse(self.path)
-            parsed_query = parse_qs(parsedURL.query)
+        def do_GET(self):  # pylint: disable=invalid-name
+            """Responds to incoming GET request from Strava with challenge token"""
+            parsed_url = urlparse(self.path)
+            parsed_query = parse_qs(parsed_url.query)
 
-            helper.log_info("Incoming request from {} - {}".format(self.client_address[0], self.path, parsed_query))
+            helper.log_info(f'Incoming request from {self.client_address[0]} - {self.path}')
 
             # Strava webhook expects a reply with the hub.challenge parameter
             challenge = parsed_query['hub.challenge'][0]
@@ -99,30 +98,35 @@ def collect_events(helper, ew):
             else:
                 self.write_empty_response(400)
 
-        def do_POST(self):
+        def do_POST(self):  # pylint: disable=invalid-name
+            """Used for incoming POST request"""
             self.handle_request()
 
-        def restart_input(self, input, session_key):
-            rest_url = 'https://localhost:8089/services/data/inputs/{}/_reload'.format(input)
-            headers = {'Authorization': 'Splunk {}'.format(session_key)}
+        def restart_input(self, modinput, session_key):
+            """Restarts modinput, used to trigger the Strava Activities input to pull in update."""
+            rest_url = f'https://localhost:8089/services/data/inputs/{modinput}/_reload'
+            headers = {'Authorization': f'Splunk {session_key}'}
 
-            r = requests.get(rest_url, headers=headers, verify=False)
+            response = requests.get(rest_url, headers=headers, verify=self.SSL_VERIFY)
             try:
-                r.raise_for_status()
-            except Exception as e:
-                helper.log_error("Something went wrong in input function: {}".format(e))
+                response.raise_for_status()
+            except Exception as ex:
+                helper.log_error(f'Something went wrong in input function: {ex}')
 
         def write_response(self, status_code, json_body):
+            """Craft response header with status code and json_body"""
             self.send_response(status_code)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
             self.write_json(json_body)
 
         def write_empty_response(self, status_code):
+            """Craft empty response with status code."""
             self.send_response(status_code)
             self.end_headers()
 
         def write_json(self, json_dict):
+            """Write json_dict to string and encode it."""
             content = json.dumps(json_dict)
 
             if isinstance(content, unicode):
@@ -131,6 +135,7 @@ def collect_events(helper, ew):
             self.wfile.write(content)
 
     def create_webhook(client_id, client_secret, verify_token, callback_url):
+        """Creates webhook, raises error if one already exists"""
         url = 'https://www.strava.com/api/v3/push_subscriptions'
         payload = {
             'client_id': client_id,
@@ -141,16 +146,17 @@ def collect_events(helper, ew):
 
         try:
             response.raise_for_status()
-        except Exception as e:
+        except Exception:
             if 'already exists' in response.text:
                 return get_webhook(client_id, client_secret)
-            elif 'GET to callback URL does not return 200':
-                helper.log_error("Error: Strava can't reach {}.".format(callback_url))
+            if 'GET to callback URL does not return 200' in response.text:
+                helper.log_error(f'Error: Strava can\'t reach {callback_url}')
                 return response.json()
         else:
-            return "Webhook created: {}".format(response.json)
+            return f'Webhook created: {response.json}'
 
     def get_webhook(client_id, client_secret):
+        """Gets webhook details"""
         url = 'https://www.strava.com/api/v3/push_subscriptions'
         params = {
             'client_id': client_id,
@@ -159,12 +165,13 @@ def collect_events(helper, ew):
 
         try:
             response.raise_for_status()
-        except Exception as e:
-            helper.log_error("Something went wrong: {}".format(e))
+        except Exception as ex:
+            helper.log_error(f'Something went wrong: {ex}')
             return False
         else:
             return response.json()
 
+    # Get global arguments
     port = int(helper.get_arg('port'))
     verify_token = helper.get_arg('verify_token')
     cert_file = helper.get_arg('cert_file')
@@ -173,16 +180,18 @@ def collect_events(helper, ew):
     client_id = helper.get_global_setting('client_id')
     client_secret = helper.get_global_setting('client_secret')
 
+    # Setup HTTP Server instance
     httpd = HTTPServer(('', port), SimpleHTTPRequestHandler)
-    httpd.socket = ssl.wrap_socket(httpd.socket, keyfile=key_file, certfile=cert_file, server_side=True)
+    httpd.socket = ssl.wrap_socket(httpd.socket, keyfile=key_file, certfile=cert_file, server_side=True, ssl_version=ssl.PROTOCOL_TLS)
 
-    helper.log_info('Starting HTTPS web server on port {}'.format(port))
+    helper.log_info(f'Starting HTTPS web server on port {port}.')
     thread = Thread(target=httpd.serve_forever)
     thread.start()
 
+    # Get webhook details. If it doesn't exist, create it.
     get_webhook = get_webhook(client_id, client_secret)
     if not get_webhook:
         response = create_webhook(client_id, client_secret, verify_token, callback_url)
         helper.log_info(response)
     else:
-        helper.log_info("Existing webhook: {}".format(get_webhook))
+        helper.log_info(f'Existing webhook: {get_webhook}')
