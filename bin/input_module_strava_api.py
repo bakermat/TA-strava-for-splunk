@@ -6,10 +6,11 @@ import json
 import requests
 
 
-def collect_events(helper, ew):
-    """Main function to get data into Splunk"""
+def collect_events(helper, ew):  # pylint: disable=invalid-name
+    """Main function to get data into Splunk."""
 
     def get_start_time(activity, token):
+        """Gets start time of an activity."""
         params = {'access_token': token}
         url = f'https://www.strava.com/api/v3/activities/{activity}'
         response = return_json(url, 'GET', parameters=params, timeout=10)
@@ -19,11 +20,25 @@ def collect_events(helper, ew):
         return start_date
 
     def get_activity(activity, token):
-        """Gets specific activity"""
+        """Gets specific activity."""
         url = f'https://www.strava.com/api/v3/activities/{activity}?include_all_efforts=true'
         params = {'access_token': token}
         response = return_json(url, "GET", parameters=params, timeout=10)
         return response
+
+    def get_old_activity_streams(list_activities, athlete_id):
+        if athlete_id in list_activities:
+            for activity_id in list_activities[athlete_id][:]:
+                # Additional API call to get the start date of the activity, needs to be included in the stream data.
+                activity_start_date = get_start_time(activity_id, access_token)
+                stream_data = get_activity_stream(access_token, activity_id, types)
+                if stream_data:
+                    parse_data(stream_data, activity_id, activity_start_date)
+                else:
+                    helper.log_info(f'No activity stream for activity {activity_id}')
+                # Remove activity id from list_activities so it won't be indexed twice.
+                list_activities[athlete_id].remove(activity_id)
+                helper.save_check_point("download_tcx_id", list_activities)
 
     def clear_checkbox(session_key, stanza):
         """ Sets the 'reindex_data' value in the REST API to 0 to clear it. Splunk then automatically restarts the input."""
@@ -33,13 +48,14 @@ def collect_events(helper, ew):
         helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False)
 
     def get_activities(ts_activity, access_token):
-        """Gets all activities, 30 per page as per Strava's default. """
+        """Gets all activities, 30 per page as per Strava's default."""
         params = {'after': ts_activity, 'access_token': access_token}
         url = "https://www.strava.com/api/v3/activities"
         response = return_json(url, "GET", parameters=params)
         return response
 
     def get_activity_stream(token, activity, types, series_type='time', resolution='high'):
+        """Gets the activity stream for given activity id."""
         types = ','.join(types)
         params = {'access_token': token}
         url = f'https://www.strava.com/api/v3/activities/{activity}/streams/{types}&series_type={series_type}&resolution={resolution}&key_by_type='
@@ -47,23 +63,22 @@ def collect_events(helper, ew):
         return response
 
     def get_athlete(token):
-        """Gets details on currently logged in athlete"""
+        """Gets details on currently logged in athlete."""
         url = "https://www.strava.com/api/v3/athlete"
         params = {'access_token': token}
         response = return_json(url, "GET", parameters=params, timeout=10)
         return response
 
     def kvstore_save_athlete(session_key, athlete_id, firstname, lastname, weight, ftp):
-        """ Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
+        """Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
         url = 'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/storage/collections/data/strava_athlete/batch_save'
         headers = {'Content-Type': 'application/json', 'Authorization': f'Splunk {session_key}'}
         payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "weight": weight, "ftp": ftp}]
         helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False)
 
     def parse_data(data, activity_id, activity_start_date):
+        """Gets raw JSON data, parses it into events and writes those to Splunk."""
         data_dict = {}
-
-        # cater for latlng, split those
         final_dict = {}
         for i in data:
             data_dict[i['type']] = i['data']
@@ -73,17 +88,17 @@ def collect_events(helper, ew):
         for item in range(1, nrange + 1):
             final_dict[item] = {}
 
-        for k, v in data_dict.items():
+        for key, value in data_dict.items():
             counter = 1
-            for i in v:
-                final_dict[counter][k] = i
+            for i in value:
+                final_dict[counter][key] = i
                 final_dict[counter]['activity_id'] = activity_id
 
-                if 'time' in k:
+                if 'time' in key:
                     final_dict[counter]['time'] = final_dict[counter]['time'] + activity_start_date  # + final_dict[counter]['time']
                     final_dict[counter]['time'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(final_dict[counter]['time']))
 
-                if 'latlng' in k:
+                if 'latlng' in key:
                     final_dict[counter]['lat'] = final_dict[counter]['latlng'][0]
                     final_dict[counter]['lon'] = final_dict[counter]['latlng'][1]
                     final_dict[counter].pop('latlng')
@@ -94,10 +109,11 @@ def collect_events(helper, ew):
         for event in result_list:
             write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=json.dumps(event))
 
+        helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
         return True
 
     def get_token(client_id, client_secret, token, renewal):
-        """Get or refresh access token from Strava API"""
+        """Get or refresh access token from Strava API."""
         url = "https://www.strava.com/api/v3/oauth/token"
 
         if renewal:
@@ -127,10 +143,10 @@ def collect_events(helper, ew):
 
         try:
             response.raise_for_status()
-        except requests.HTTPError as e:
+        except requests.HTTPError as ex:
             # status code 429 means we hit Strava's API limit, wait till next 15 minute mark (+5 seconds) and try again
-            if e.response.status_code == 429:
-                # Get the API limits for this user
+            if ex.response.status_code == 429:
+                # Get the 15m/24h API limits for this user
                 helper.log_info(response.headers)
                 api_usage_15m = response.headers['X-RateLimit-Usage'].split(",")[0]
                 api_usage_24h = response.headers['X-RateLimit-Usage'].split(",")[1]
@@ -145,24 +161,24 @@ def collect_events(helper, ew):
                 response = return_json(url, method, **kwargs)
                 helper.log_debug(f'429 detail: {response}')
                 return response
-            elif e.response.status_code == 400 or e.response.status_code == 401:
+            if ex.response.status_code == 400 or ex.response.status_code == 401:
                 helper.log_error('Strava API credentials invalid or session expired. If issue persists, make sure Client ID & Client Secret have been added to the Configuration -> Add-On Parameters tab and your access code & timestamp are valid.')
                 sys.exit(1)
-            elif e.response.status_code == 404:
+            if ex.response.status_code == 404:
                 helper.log_warning(f'404 Error: likely no stream data for activity {url}')
                 return False
-            elif e.response.status_code == 500:
+            if ex.response.status_code == 500:
                 helper.log_warning(f'500 Error: no data received from Strava API for url {url}, it might be corrupt or invalid. Skipping activity.')
                 return False
-            else:
-                helper.log_error(f'Error: {e}')
-                sys.exit(1)
+            # In case there's any other error than the ones described above, log the error and exit.
+            helper.log_error(f'Error: {ex}')
+            sys.exit(1)
 
         # Must have been a 200 status code
         return response.json()
 
     def set_athlete(response):
-        """Creates dict with athlete details, including token expiry"""
+        """Creates dict with athlete details, including token expiry."""
         name = response['athlete']['firstname'] + " " + response['athlete']['lastname']
         athlete = {
             'id': response['athlete']['id'],
@@ -174,7 +190,7 @@ def collect_events(helper, ew):
         return athlete
 
     def write_to_splunk(**kwargs):
-        """Writes activity to Splunk index"""
+        """Writes activity to Splunk index."""
         event = helper.new_event(**kwargs)
         ew.write_event(event)
 
@@ -265,10 +281,9 @@ def collect_events(helper, ew):
     types = ['time', 'distance', 'latlng', 'altitude', 'velocity_smooth', 'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
 
     while True:
-
-        download_tcx_id = helper.get_check_point("download_tcx_id") or {}
-        if athlete_id not in download_tcx_id:
-            download_tcx_id[athlete_id] = []
+        # download_tcx_id = helper.get_check_point("download_tcx_id") or {}
+        # if athlete_id not in download_tcx_id:
+        #    download_tcx_id[athlete_id] = []
 
         response_activities = get_activities(ts_activity, access_token)
 
@@ -282,9 +297,7 @@ def collect_events(helper, ew):
                 response = get_activity(activity_id, access_token)
 
                 # response = False for a 500 Error, which is likely an invalid Strava API file. In that case skip the activity and continue.
-                if not response:
-                    continue
-                else:
+                if response:
                     data = json.dumps(response)
 
                     # Get start_date (UTC) and convert to UTC timestamp
@@ -300,30 +313,17 @@ def collect_events(helper, ew):
                     # Get stream data for this activity
                     stream_data = get_activity_stream(access_token, activity_id, types)
                     if stream_data:
-                        parsed_data = parse_data(stream_data, activity_id, ts_activity)
+                        parse_data(stream_data, activity_id, ts_activity)
                         helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
 
-                    download_tcx_id[athlete_id].append(activity_id)
-                    helper.save_check_point("download_tcx_id", download_tcx_id)
+                    # download_tcx_id[athlete_id].append(activity_id)
+                    # helper.save_check_point("download_tcx_id", download_tcx_id)
 
                     # Save the timestamp of the last event to a checkpoint
                     athlete.update({'ts_activity': ts_activity})
                     helper.save_check_point(stanza, athlete)
 
+    # Get outstanding activity streams to download for compatibility with 2.x versions, save them in checkpoint
     list_activities = helper.get_check_point("download_tcx_id") or {}
-
     athlete_id = str(athlete_id)
-    if athlete_id in list_activities:
-        for activity_id in list_activities[athlete_id][:]:
-            # Additional API call to get the start date of the activity, needs to be included in the stream data.
-            activity_start_date = get_start_time(activity_id, access_token)
-            helper.log_info(f'Getting stream for activity {activity_id}')
-            stream_data = get_activity_stream(access_token, activity_id, types)
-            if stream_data:
-                parsed_data = parse_data(stream_data, activity_id, activity_start_date)
-                write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=parsed_data)
-                helper.log_info(f'Added activity stream for activity {activity_id} to Splunk')
-            else:
-                helper.log_info(f'No activity stream for activity {activity_id}')
-            list_activities[athlete_id].remove(activity_id)
-            helper.save_check_point("download_tcx_id", list_activities)
+    get_old_activity_streams(list_activities, str(athlete_id))
