@@ -80,7 +80,7 @@ fi
 
 # Remove ${build_folder} and build script so it doesn't end up in tgz file
 rm -rf ${dir}/${build_folder}
-rm -rf ${dir}/build_script.sh
+rm -rf ${dir}/build.sh
 
 # Get app version, set date and create file in /tmp folder
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
