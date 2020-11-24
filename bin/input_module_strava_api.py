@@ -267,8 +267,9 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         response_activities = get_activities(ts_activity, access_token)
 
         # if all activities retrieved, set get_old_activities, save checkpoint and end loop to finish
-        if len(response_activities) == 0:
+        if len(response_activities) == 0:  # pylint: disable=no-else-break
             helper.log_info(f'All done, got all activities for {athlete_name} ({athlete_id})')
+            break
         else:
             # Get more details from each activity
             for event in response_activities:
