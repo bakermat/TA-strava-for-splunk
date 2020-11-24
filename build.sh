@@ -94,9 +94,9 @@ fi
 rm -rf ${dir}/${build_folder}
 rm -rf ${dir}/build.sh
 
-find ./${app} -type f -print0 | xargs -0 chmod 0644
-find ./${app}/bin -type f -print0 | xargs -0 chmod 0755
-find ./${app} -type d -print0 | xargs -0 chmod 0755
+find ${dir} -type f -print0 | xargs -0 chmod 0644
+find ${dir}/bin -type f -print0 | xargs -0 chmod 0755
+find ${dir} -type d -print0 | xargs -0 chmod 0755
 
 # Get app version, set date and create file in /tmp folder
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
