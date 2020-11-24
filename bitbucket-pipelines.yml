@@ -2,6 +2,7 @@ image: python:3.7
 
 pipelines:
   custom:
+    Manual pipeline:
     - step:
         name: Lint Python files
         caches:

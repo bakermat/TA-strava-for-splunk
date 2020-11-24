@@ -1,6 +1,6 @@
 app='TA-strava-for-splunk'
 build_folder='build_files'
-dir='/tmp/'${app}
+dir='/Users/ppeeters/Desktop/tmp/'${app}
 
 mkdir -p ${dir}
 cp -r * ${dir}/
@@ -24,12 +24,12 @@ else
 fi
 
 # Adds KV_MODE = none to [strava:activities] stanza in props.conf, using gsed. Required as AOB strips it, which is a bug.
-gsed -i'' '/^\[strava:activities\]/a KV_MODE = none' ${dir}/default/props.conf 2>/dev/null
-if [ $? -eq 0 ]; then
-    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tSUCCESS"
-else
-    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tFAIL"
-fi
+#gsed -i'' '/^\[strava:activities\]/a KV_MODE = none' ${dir}/default/props.conf 2>/dev/null
+#if [ $? -eq 0 ]; then
+#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tSUCCESS"
+#else
+#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tFAIL"
+#fi
 
 # Replace bootstrap-enterprise.css with stock Splunk 8.x one for new fonts:
 cp ${build_folder}/bootstrap-enterprise.css.newui ${dir}/appserver/static/css/bootstrap-enterprise.css 2>/dev/null
@@ -55,7 +55,7 @@ else
     echo "- Updating common.js to be inline with new Splunk UI (1/2)\t\t\t\tFAIL"
 fi
 
-# # Second pass for when font-size is not specified before font-family.
+# Second pass for when font-size is not specified before font-family.
 gsed -i'' 's/font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Updating common.js to be inline with new Splunk UI (2/2)\t\t\t\tSUCCESS"
