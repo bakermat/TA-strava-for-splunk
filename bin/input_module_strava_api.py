@@ -16,36 +16,12 @@ def validate_input(helper, definition):
 def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-statements,too-many-branches
     """Main function to get data into Splunk."""
 
-    def get_start_time(activity, token):
-        """Gets start time of an activity."""
-        params = {'access_token': token}
-        url = f'https://www.strava.com/api/v3/activities/{activity}'
-        response = return_json(url, 'GET', parameters=params, timeout=10)
-        start_date = response['start_date']
-        time_format = '%Y-%m-%dT%H:%M:%SZ'
-        start_date = int(datetime.datetime.strptime(start_date, time_format).timestamp())
-        return start_date
-
     def get_activity(activity, token):
         """Gets specific activity."""
         url = f'https://www.strava.com/api/v3/activities/{activity}?include_all_efforts=true'
         params = {'access_token': token}
         response = return_json(url, "GET", parameters=params, timeout=10)
         return response
-
-    def get_old_activity_streams(list_activities, athlete_id):
-        if athlete_id in list_activities:
-            for activity_id in list_activities[athlete_id][:]:
-                # Additional API call to get the start date of the activity, needs to be included in the stream data.
-                activity_start_date = get_start_time(activity_id, access_token)
-                stream_data = get_activity_stream(access_token, activity_id, types)
-                if stream_data:
-                    parse_data(stream_data, activity_id, activity_start_date)
-                else:
-                    helper.log_info(f'No activity stream for activity {activity_id}')
-                # Remove activity id from list_activities so it won't be indexed twice.
-                list_activities[athlete_id].remove(activity_id)
-                helper.save_check_point("download_tcx_id", list_activities)
 
     def clear_checkbox(session_key, stanza):
         """ Sets the 'reindex_data' value in the REST API to 0 to clear it. Splunk then automatically restarts the input."""
@@ -321,8 +297,3 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     # Save the timestamp of the last event to a checkpoint
                     athlete.update({'ts_activity': ts_activity})
                     helper.save_check_point(stanza, athlete)
-
-    # Get outstanding activity streams to download for compatibility with 2.x versions, save them in checkpoint
-    list_activities = helper.get_check_point("download_tcx_id") or {}
-    athlete_id = str(athlete_id)
-    get_old_activity_streams(list_activities, str(athlete_id))
