@@ -19,11 +19,12 @@ pipelines:
             - pip install bandit
             - bandit -r $BITBUCKET_CLONE_DIR/bin/*.py
     - step:
-        name: Customise dashboard & config files, exports /tmp/TA-strava-for-splunk-<version>.tgz file
+        name: Build TA-strava-for-splunk.tgz
         script:
           - ./build.sh
+          - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
         artifacts:
-          - /tmp/*.tgz
+          - $APP_NAME.tgz
     - step:
         name: Splunk AppInspect Test
         caches:
@@ -34,7 +35,7 @@ pipelines:
             - pip install splunk-appinspect.tar.gz 
             #- mkdir /tmp/$APP_NAME
             #- git archive --format tar HEAD | tar --exclude-vcs --exclude=bitbucket-pipelines.yml -xC /tmp/$APP_NAME
-            - splunk-appinspect inspect /tmp/$APP_NAME.tgz --mode precert --included-tags cloud
+            - splunk-appinspect inspect BITBUCKET_CLONE_DIR/$APP_NAME.tgz --mode precert --included-tags cloud
             #- splunk-appinspect inspect /tmp/$APP_NAME*.tgz --mode precert --included-tags cloud | grep "\[  F  ]\|\[  E  ]\|\[  M  ]\[  W  ]"
   branches:
     master:
