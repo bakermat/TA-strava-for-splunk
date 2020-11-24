@@ -2,7 +2,15 @@ image: python:3.7
 
 pipelines:
   custom:
-    Manual pipeline:
+    Build TA-strava-for-splunk.tgz:
+    - step:
+        name: Build TA-strava-for-splunk.tgz
+        script:
+          - ./build.sh
+          - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
+        artifacts:
+          - TA-strava-for-splunk.tgz
+    Full test pipeline:
     - step:
        name: Lint Python files
        caches:
