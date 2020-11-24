@@ -22,11 +22,14 @@ pipelines:
         name: Customise dashboard & config files, exports /tmp/TA-strava-for-splunk-<version>.tgz file
         script:
           - ./build.sh
+        artifacts:
+          - /tmp/*.tgz
     - step:
         name: Splunk AppInspect Test
         caches:
             - pip
         script:
+            - ls -lah /tmp
             - wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
             - pip install splunk-appinspect.tar.gz 
             #- mkdir /tmp/$APP_NAME
