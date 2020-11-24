@@ -18,49 +18,49 @@ rm -rf ${dir}/bin/__pycache__
 # Inserts the helplinks.js line before </body>
 sed -i'' 's#<\/body.*#<script src="${make_url(app_js + '\''/helplinks.js'\'')}"></script></body>#' ${dir}/appserver/templates/base.html 2>/dev/null
 if [ $? -eq 0 ]; then
-    echo "- Adding custom JS file to base.html\t\t\t\t\t\t\tSUCCESS"
+    echo "- Adding custom JS file to base.html : SUCCESS"
 else
-    echo "- Adding custom JS file to base.html\t\t\t\t\t\t\tFAIL"
+    echo "- Adding custom JS file to base.html : FAIL"
 fi
 
 # Adds KV_MODE = none to [strava:activities] stanza in props.conf, using gsed. Required as AOB strips it, which is a bug.
 #gsed -i'' '/^\[strava:activities\]/a KV_MODE = none' ${dir}/default/props.conf 2>/dev/null
 #if [ $? -eq 0 ]; then
-#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tSUCCESS"
+#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf : SUCCESS"
 #else
-#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf\t\t\tFAIL"
+#    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf : FAIL"
 #fi
 
 # Replace bootstrap-enterprise.css with stock Splunk 8.x one for new fonts:
 cp ${build_folder}/bootstrap-enterprise.css.newui ${dir}/appserver/static/css/bootstrap-enterprise.css 2>/dev/null
 if [ $? -eq 0 ]; then
-    echo "- Replacing bootstrap-enterprise.css to use new Splunk fonts\t\t\t\tSUCCESS"
+    echo "- Replacing bootstrap-enterprise.css to use new Splunk fonts : SUCCESS"
 else
-    echo "- Replacing bootstrap-enterprise.css to use new Splunk fonts\t\t\t\tFAIL"
+    echo "- Replacing bootstrap-enterprise.css to use new Splunk fonts : FAIL"
 fi
 
 # Replace common.css with stock Splunk 8.x one for new fonts:
 cp ${dir}/${build_folder}/common.css.newui ${dir}/appserver/static/css/common.css 2>/dev/null
 if [ $? -eq 0 ]; then
-    echo "- Replacing common.css to update UI elements\t\t\t\t\t\tSUCCESS"
+    echo "- Replacing common.css to update UI elements : SUCCESS"
 else
-    echo "- Replacing common.css to update UI elements\t\t\t\t\t\tFAIL"
+    echo "- Replacing common.css to update UI elements : FAIL"
 fi
 
 # Updates appserver/static/js/build/common.js to make it look more like a modern Splunk UI
 sed -i'' 's/font-size:12px;font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-size:14px;font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
 if [ $? -eq 0 ]; then
-    echo "- Updating common.js to be inline with new Splunk UI (1/2)\t\t\t\tSUCCESS"
+    echo "- Updating common.js to be inline with new Splunk UI (1/2) : SUCCESS"
 else
-    echo "- Updating common.js to be inline with new Splunk UI (1/2)\t\t\t\tFAIL"
+    echo "- Updating common.js to be inline with new Splunk UI (1/2) : FAIL"
 fi
 
 # Second pass for when font-size is not specified before font-family.
 sed -i'' 's/font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
 if [ $? -eq 0 ]; then
-    echo "- Updating common.js to be inline with new Splunk UI (2/2)\t\t\t\tSUCCESS"
+    echo "- Updating common.js to be inline with new Splunk UI (2/2) : SUCCESS"
 else
-    echo "- Updating common.js to be inline with new Splunk UI (2/2)\t\t\t\tFAIL"
+    echo "- Updating common.js to be inline with new Splunk UI (2/2) : FAIL"
 fi
 
 # This overwrites the default.xml file to rearrange the order of the menu items.
@@ -73,9 +73,9 @@ cat 2>/dev/null > ${dir}/default/data/ui/nav/default.xml <<EOL
 </nav>
 EOL
 if [ $? -eq 0 ]; then
-    echo "- Replacing ${dir}/default/data/ui/nav/default.xml\t\t\tSUCCESS"
+    echo "- Replacing ${dir}/default/data/ui/nav/default.xml : SUCCESS"
 else
-    echo "- Replacing ${dir}/default/data/ui/nav/default.xml\t\t\tFAIL"
+    echo "- Replacing ${dir}/default/data/ui/nav/default.xml : FAIL"
 fi
 
 # Remove ${build_folder} and build script so it doesn't end up in tgz file
@@ -87,24 +87,25 @@ version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 if [ $? -eq 0 ]; then
     #datetime=$(date +%F_%H-%M-%S)
     cd ${dir}/..
-    filename="${app}_${version}.tgz"
+    filename="${app}.tgz"
+    #filename="${app}_${version}.tgz"
 
     # Now package it all into a tar.gz that can be uploaded to Splunkbase
     COPYFILE_DISABLE=1 tar zcvf ${filename} ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
-        echo "- Final app is ${filename}\t\tSUCCESS"
+        echo "- Final app is ${filename} : SUCCESS"
     else
-        echo "- Final app is ${filename}\t\tFAIL"
+        echo "- Final app is ${filename} : FAIL"
     fi
 else
-    echo "Error reading app.conf, is app location correct?\t\t\tFAIL"
+    echo "Error reading app.conf, is app location correct? : FAIL"
 fi
 
 # Delete the $app folder
 rm -rf ${dir}
 if [ $? -eq 0 ]; then
-    echo "- Removing temporary ${app} folder\t\t\t\t\tSUCCESS"
+    echo "- Removing temporary ${app} folder : SUCCESS"
 else
-    echo "- Removing temporary ${app} folder\t\t\t\t\tFAIL"
+    echo "- Removing temporary ${app} folder : FAIL"
 fi
