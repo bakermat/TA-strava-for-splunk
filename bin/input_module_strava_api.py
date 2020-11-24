@@ -154,7 +154,6 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
             # status code 429 means we hit Strava's API limit, wait till next 15 minute mark (+5 seconds) and try again
             if ex.response.status_code == 429:
                 # Get the 15m/24h API limits for this user
-                helper.log_info(response.headers)
                 api_usage_15m = response.headers['X-RateLimit-Usage'].split(",")[0]
                 api_usage_24h = response.headers['X-RateLimit-Usage'].split(",")[1]
                 api_limit_15m = response.headers['X-RateLimit-Limit'].split(",")[0]
@@ -288,9 +287,6 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
     types = ['time', 'distance', 'latlng', 'altitude', 'velocity_smooth', 'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
 
     while True:
-        # download_tcx_id = helper.get_check_point("download_tcx_id") or {}
-        # if athlete_id not in download_tcx_id:
-        #    download_tcx_id[athlete_id] = []
 
         response_activities = get_activities(ts_activity, access_token)
 
@@ -321,10 +317,6 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     stream_data = get_activity_stream(access_token, activity_id, types)
                     if stream_data:
                         parse_data(stream_data, activity_id, ts_activity)
-                        helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
-
-                    # download_tcx_id[athlete_id].append(activity_id)
-                    # helper.save_check_point("download_tcx_id", download_tcx_id)
 
                     # Save the timestamp of the last event to a checkpoint
                     athlete.update({'ts_activity': ts_activity})
