@@ -4,7 +4,7 @@ pipelines:
   custom:
     Build TA-strava-for-splunk.tgz:
     - step:
-        name: Build TA-strava-for-splunk.tgz
+        name: Build TA-strava-for-splunk tarball
         script:
           - ./build.sh
           - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
@@ -46,12 +46,12 @@ pipelines:
   branches:
     master:
       - step:
-        name: Build TA-strava-for-splunk.tgz
-        script:
-          - ./build.sh
-          - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
-        artifacts:
-          - TA-strava-for-splunk.tgz
+          name: Build TA-strava-for-splunk.tgz
+          script:
+            - ./build.sh
+            - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
+          artifacts:
+            - TA-strava-for-splunk.tgz
       - step:
           name: Deploy to Splunkbase
           script:
