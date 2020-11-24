@@ -3,26 +3,28 @@ image: python:3.7
 pipelines:
   custom:
     Manual pipeline:
-    - step:
-        name: Lint Python files
-        caches:
-            - pip
-        script:
-            - pip install requests
-            - pip install pylint
-            - pylint $BITBUCKET_CLONE_DIR/bin/input_module_*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks
-    - step:
-        name: Security test using Bandit
-        caches:
-            - pip
-        script:
-            - pip install bandit
-            - bandit -r $BITBUCKET_CLONE_DIR/bin/*.py
+    #- step:
+    #    name: Lint Python files
+    #    caches:
+    #        - pip
+    #    script:
+    #        - pip install requests
+    #        - pip install pylint
+    #        - pylint $BITBUCKET_CLONE_DIR/bin/input_module_*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks
+    #- step:
+    #    name: Security test using Bandit
+    #    caches:
+    #        - pip
+    #    script:
+    #        - pip install bandit
+    #        - bandit -r $BITBUCKET_CLONE_DIR/bin/*.py
     - step:
         name: Build TA-strava-for-splunk.tgz
         script:
           - ./build.sh
+          - ls -lah /tmp
           - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
+          - ls -lah $BITBUCKET_CLONE_DIR
         artifacts:
           - $APP_NAME.tgz
     - step:
@@ -31,11 +33,9 @@ pipelines:
             - pip
         script:
             - ls -lah $BITBUCKET_CLONE_DIR
-            - wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
-            - pip install splunk-appinspect.tar.gz 
-            #- mkdir /tmp/$APP_NAME
-            #- git archive --format tar HEAD | tar --exclude-vcs --exclude=bitbucket-pipelines.yml -xC /tmp/$APP_NAME
-            - splunk-appinspect inspect $BITBUCKET_CLONE_DIR/$APP_NAME.tgz --mode precert --included-tags cloud
+            #- wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
+            #- pip install splunk-appinspect.tar.gz 
+            #- splunk-appinspect inspect $BITBUCKET_CLONE_DIR/$APP_NAME.tgz --mode precert --included-tags cloud
             #- splunk-appinspect inspect /tmp/$APP_NAME*.tgz --mode precert --included-tags cloud | grep "\[  F  ]\|\[  E  ]\|\[  M  ]\[  W  ]"
   branches:
     master:
