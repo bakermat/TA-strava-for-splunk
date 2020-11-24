@@ -16,13 +16,6 @@ def validate_input(helper, definition):
 def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-statements,too-many-branches
     """Main function to get data into Splunk."""
 
-    def get_activity(activity, token):
-        """Gets specific activity."""
-        url = f'https://www.strava.com/api/v3/activities/{activity}?include_all_efforts=true'
-        params = {'access_token': token}
-        response = return_json(url, "GET", parameters=params, timeout=10)
-        return response
-
     def clear_checkbox(session_key, stanza):
         """ Sets the 'reindex_data' value in the REST API to 0 to clear it. Splunk then automatically restarts the input."""
         url = f'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/data/inputs/strava_api/{stanza}'
@@ -35,6 +28,13 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         params = {'after': ts_activity, 'access_token': access_token}
         url = "https://www.strava.com/api/v3/activities"
         response = return_json(url, "GET", parameters=params)
+        return response
+
+    def get_activity(activity, token):
+        """Gets specific activity."""
+        url = f'https://www.strava.com/api/v3/activities/{activity}?include_all_efforts=true'
+        params = {'access_token': token}
+        response = return_json(url, "GET", parameters=params, timeout=10)
         return response
 
     def get_activity_stream(token, activity, types, series_type='time', resolution='high'):
@@ -52,48 +52,12 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         response = return_json(url, "GET", parameters=params, timeout=10)
         return response
 
-    def kvstore_save_athlete(session_key, athlete_id, firstname, lastname, weight, ftp):  # pylint: disable=too-many-arguments
-        """Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
-        url = 'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/storage/collections/data/strava_athlete/batch_save'
-        headers = {'Content-Type': 'application/json', 'Authorization': f'Splunk {session_key}'}
-        payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "weight": weight, "ftp": ftp}]
-        helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False)
-
-    def parse_data(data, activity_id, activity_start_date):
-        """Gets raw JSON data, parses it into events and writes those to Splunk."""
-        data_dict = {}
-        final_dict = {}
-        for i in data:
-            data_dict[i['type']] = i['data']
-
-        counter = 1
-        nrange = len(data_dict['time'])
-        for item in range(1, nrange + 1):
-            final_dict[item] = {}
-
-        for key, value in data_dict.items():
-            counter = 1
-            for i in value:
-                final_dict[counter][key] = i
-                final_dict[counter]['activity_id'] = activity_id
-
-                if 'time' in key:
-                    final_dict[counter]['time'] = final_dict[counter]['time'] + activity_start_date  # + final_dict[counter]['time']
-                    final_dict[counter]['time'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(final_dict[counter]['time']))
-
-                if 'latlng' in key:
-                    final_dict[counter]['lat'] = final_dict[counter]['latlng'][0]
-                    final_dict[counter]['lon'] = final_dict[counter]['latlng'][1]
-                    final_dict[counter].pop('latlng')
-                counter += 1
-
-        result_list = [final_dict[x] for x in final_dict]
-
-        for event in result_list:
-            write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=json.dumps(event))
-
-        helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
-        return True
+    def get_epoch(timestamp):
+        """Converts Strava datetime to epoch timestamp"""
+        timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+        epoch = calendar.timegm(timestamp_dt.timetuple())
+        # ts_activity = int(ts_activity)
+        return epoch
 
     def get_token(client_id, client_secret, token, renewal):
         """Get or refresh access token from Strava API."""
@@ -115,10 +79,51 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
             message = "Successfully authenticated with Strava using access code."
 
         response = return_json(url, "POST", payload=payload)
-
         helper.log_info(message)
-
         return response
+
+    def kvstore_save_athlete(session_key, athlete_id, firstname, lastname, weight, ftp):  # pylint: disable=too-many-arguments
+        """Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
+        url = 'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/storage/collections/data/strava_athlete/batch_save'
+        headers = {'Content-Type': 'application/json', 'Authorization': f'Splunk {session_key}'}
+        payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "weight": weight, "ftp": ftp}]
+        helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False, use_proxy=False)
+
+    def parse_data(data, activity_id, activity_start_date):
+        """Gets raw JSON data, parses it into events and writes those to Splunk."""
+        data_dict = {}
+        final_dict = {}
+        for i in data:
+            data_dict[i['type']] = i['data']
+
+        counter = 1
+        nrange = len(data_dict['time'])
+        for item in range(1, nrange + 1):
+            final_dict[item] = {}
+
+        for key, value in data_dict.items():
+            counter = 1
+            for i in value:
+                final_dict[counter][key] = i
+                final_dict[counter]['activity_id'] = activity_id
+
+                if 'time' in key:
+                    final_dict[counter]['time'] = final_dict[counter]['time'] + activity_start_date
+                    final_dict[counter]['time'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(final_dict[counter]['time']))
+
+                if 'latlng' in key:
+                    final_dict[counter]['lat'] = final_dict[counter]['latlng'][0]
+                    final_dict[counter]['lon'] = final_dict[counter]['latlng'][1]
+                    final_dict[counter].pop('latlng')
+                counter += 1
+
+        result_list = [final_dict[x] for x in final_dict]
+
+        for event in result_list:
+            write_to_splunk(index=helper.get_output_index(), sourcetype='strava:activities:stream', data=json.dumps(event))
+
+        helper.log_info(f'Added activity stream {activity_id} for {athlete_id}.')
+        return True
 
     def return_json(url, method, **kwargs):
         """Gets JSON from URL and parses it for potential error messages."""
@@ -144,7 +149,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                 helper.log_debug(f'429 detail: {response}')
                 return response
             if ex.response.status_code == 400 or ex.response.status_code == 401:
-                helper.log_error('Strava API credentials invalid or session expired. If issue persists, make sure Client ID & Client Secret have been added to the Configuration -> Add-On Parameters tab and your access code & timestamp are valid.')
+                helper.log_error(f'{ex.response.status_code} Error: Strava API credentials invalid or session expired. Make sure Client ID & Client Secret have been added to the Configuration -> Add-On Parameters tab and your access code is valid.')
                 sys.exit(1)
             if ex.response.status_code == 404:
                 helper.log_warning(f'404 Error: likely no stream data for activity {url}')
@@ -181,11 +186,12 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
     client_secret = helper.get_global_setting('client_secret')
     access_code = helper.get_arg('access_code')
     start_time = helper.get_arg('start_time') or 0
+    types = ['time', 'distance', 'latlng', 'altitude', 'velocity_smooth', 'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
 
     # stanza is the name of the input. This is a unique name and will be used as a checkpoint key to save/retrieve details about an athlete
     stanza = list(helper.get_input_stanza())[0]
     athlete = helper.get_check_point(stanza)
-    helper.log_debug('Athlete: {athlete}')
+    helper.log_debug(f'Athlete: {athlete}')
 
     # if reindex_data checkbox is set, update the start_time to be the one specified and clear the checkbox.
     if helper.get_arg('reindex_data'):
@@ -244,23 +250,33 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         ts_activity = athlete['ts_activity'] or start_time
 
     # webhook_updates contains updated activities that came in via webhook.
-    webhook_updates = helper.get_check_point("webhook_updates") or {}
+    webhook_updates = helper.get_check_point('webhook_updates') or {}
 
     if str(athlete_id) in webhook_updates:
         for activity in webhook_updates[str(athlete_id)][:]:
             helper.log_info(f'Received update via webhook for activity {activity} from athlete {athlete_id}')
             response = get_activity(activity, access_token)
+            start_date_epoch = get_epoch(response['start_date'])
+
+            #timestamp = response['start_date']
+            #timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+            #ts_activity = calendar.timegm(timestamp_dt.timetuple())
+            #ts_activity = int(ts_activity)
 
             # Store the event in Splunk
             write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=json.dumps(response))
 
+            # Get stream data for this activity and write to Splunk
+            stream_data = get_activity_stream(access_token, activity, types)
+            if stream_data:
+                parse_data(stream_data, activity, start_date_epoch)
+
             # Remove from dict and save dict
             webhook_updates[str(athlete_id)].remove(activity)
-            helper.save_check_point("webhook_updates", webhook_updates)
+            helper.save_check_point('webhook_updates', webhook_updates)
+        helper.log_info(f'Got all webhook events for athlete {athlete_id}')
 
     helper.log_info(f'Checking if there are new activities for {athlete_name} ({athlete_id})')
-
-    types = ['time', 'distance', 'latlng', 'altitude', 'velocity_smooth', 'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
 
     while True:
 
@@ -281,10 +297,11 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     data = json.dumps(response)
 
                     # Get start_date (UTC) and convert to UTC timestamp
-                    timestamp = event['start_date']
-                    timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                    ts_activity = calendar.timegm(timestamp_dt.timetuple())
-                    ts_activity = int(ts_activity)
+                    start_date_epoch = get_epoch(event['start_date'])
+                    #timestamp = event['start_date']
+                    #timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
+                    #ts_activity = calendar.timegm(timestamp_dt.timetuple())
+                    #ts_activity = int(ts_activity)
 
                     # Store the event in Splunk
                     write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
@@ -293,8 +310,8 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     # Get stream data for this activity
                     stream_data = get_activity_stream(access_token, activity_id, types)
                     if stream_data:
-                        parse_data(stream_data, activity_id, ts_activity)
+                        parse_data(stream_data, activity_id, start_date_epoch)
 
                     # Save the timestamp of the last event to a checkpoint
-                    athlete.update({'ts_activity': ts_activity})
+                    athlete.update({'ts_activity': start_date_epoch})
                     helper.save_check_point(stanza, athlete)
