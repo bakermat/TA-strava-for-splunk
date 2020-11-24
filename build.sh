@@ -11,6 +11,8 @@ rm -rf ${dir}/local
 rm -rf ${dir}/metadata/local.meta
 rm -rf ${dir}/bin/__pycache__
 
+version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
+
 # Get latest version of spl from pre-mod directory and extract to current folder
 #filename=$(ls -t pre-mod/* | head -1)
 #tar xvzf $filename
@@ -24,15 +26,25 @@ else
 fi
 
 # Adds KV_MODE = none to [strava:activities] stanza in props.conf, using gsed. Required as AOB strips it, which is a bug.
-#gsed -i'' '/^\[strava:activities\]/a KV_MODE = none' ${dir}/default/props.conf 2>/dev/null
+#sed -i'' '/^\[strava:activities\]/a KV_MODE = none' ${dir}/default/props.conf 2>/dev/null
 #if [ $? -eq 0 ]; then
 #    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf : SUCCESS"
 #else
 #    echo "- Adding 'KV_MODE = none' to [strava:activities] stanza in props.conf : FAIL"
 #fi
 
+
+cp ${build_folder}/globalConfig.json ${dir}/appserver/static/js/build/globalConfig.json 2>/dev/null
+if [ $? -eq 0 ]; then
+    echo "- Replacing globalConfig.json with new version : SUCCESS"
+else
+    echo "- Replacing globalConfig.json with new version : FAIL"
+fi
+
+sed -i'' 's/APP_VERSION/'${version}'/' ${dir}/appserver/static/js/build/globalConfig.json 2>/dev/null
+
 # Replace bootstrap-enterprise.css with stock Splunk 8.x one for new fonts:
-cp ${build_folder}/bootstrap-enterprise.css.newui ${dir}/appserver/static/css/bootstrap-enterprise.css 2>/dev/null
+cp ${build_folder}/bootstrap-enterprise.css ${dir}/appserver/static/css/bootstrap-enterprise.css 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Replacing bootstrap-enterprise.css to use new Splunk fonts : SUCCESS"
 else
@@ -40,7 +52,7 @@ else
 fi
 
 # Replace common.css with stock Splunk 8.x one for new fonts:
-cp ${dir}/${build_folder}/common.css.newui ${dir}/appserver/static/css/common.css 2>/dev/null
+cp ${dir}/${build_folder}/common.css ${dir}/appserver/static/css/common.css 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Replacing common.css to update UI elements : SUCCESS"
 else
