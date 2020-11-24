@@ -1,6 +1,6 @@
 app='TA-strava-for-splunk'
 build_folder='build_files'
-dir='/Users/ppeeters/Desktop/tmp/'${app}
+dir='/tmp/'${app}
 
 mkdir -p ${dir}
 cp -r * ${dir}/
@@ -16,7 +16,7 @@ rm -rf ${dir}/bin/__pycache__
 #tar xvzf $filename
 
 # Inserts the helplinks.js line before </body>
-gsed -i'' 's#<\/body.*#<script src="${make_url(app_js + '\''/helplinks.js'\'')}"></script></body>#' ${dir}/appserver/templates/base.html 2>/dev/null
+sed -i'' 's#<\/body.*#<script src="${make_url(app_js + '\''/helplinks.js'\'')}"></script></body>#' ${dir}/appserver/templates/base.html 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Adding custom JS file to base.html\t\t\t\t\t\t\tSUCCESS"
 else
@@ -48,7 +48,7 @@ else
 fi
 
 # Updates appserver/static/js/build/common.js to make it look more like a modern Splunk UI
-gsed -i'' 's/font-size:12px;font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-size:14px;font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
+sed -i'' 's/font-size:12px;font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-size:14px;font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Updating common.js to be inline with new Splunk UI (1/2)\t\t\t\tSUCCESS"
 else
@@ -56,7 +56,7 @@ else
 fi
 
 # Second pass for when font-size is not specified before font-family.
-gsed -i'' 's/font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
+sed -i'' 's/font-family:Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/font-family:Splunk Platform Sans,Proxima Nova,Roboto,Droid,Helvetica Neue,Helvetica,Arial,sans-serif/g' ${dir}/appserver/static/js/build/common.js 2>/dev/null
 if [ $? -eq 0 ]; then
     echo "- Updating common.js to be inline with new Splunk UI (2/2)\t\t\t\tSUCCESS"
 else
