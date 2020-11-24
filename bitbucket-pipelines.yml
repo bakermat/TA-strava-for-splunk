@@ -26,7 +26,7 @@ pipelines:
           - mv /tmp/*.tgz $BITBUCKET_CLONE_DIR
           - ls -lah $BITBUCKET_CLONE_DIR
         artifacts:
-          - $APP_NAME.tgz
+          - TA-strava-for-splunk.tgz
     - step:
         name: Splunk AppInspect Test
         caches:
