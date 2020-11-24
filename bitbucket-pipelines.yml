@@ -10,7 +10,7 @@ pipelines:
         script:
             - pip install requests
             - pip install pylint
-            - pylint $BITBUCKET_CLONE_DIR/bin/*.py --disable=broad-except,logging-fstring-interpolation,line-too-long,too-many-locals,too-many-nested-blocks
+            - pylint $BITBUCKET_CLONE_DIR/bin/input_module*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks
     - step:
         name: Security test using Bandit
         caches:
