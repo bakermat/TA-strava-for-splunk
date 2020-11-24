@@ -256,12 +256,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         for activity in webhook_updates[str(athlete_id)][:]:
             helper.log_info(f'Received update via webhook for activity {activity} from athlete {athlete_id}')
             response = get_activity(activity, access_token)
-            start_date_epoch = get_epoch(response['start_date'])
-
-            #timestamp = response['start_date']
-            #timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-            #ts_activity = calendar.timegm(timestamp_dt.timetuple())
-            #ts_activity = int(ts_activity)
+            ts_activity = get_epoch(response['start_date'])
 
             # Store the event in Splunk
             write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=json.dumps(response))
@@ -269,7 +264,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
             # Get stream data for this activity and write to Splunk
             stream_data = get_activity_stream(access_token, activity, types)
             if stream_data:
-                parse_data(stream_data, activity, start_date_epoch)
+                parse_data(stream_data, activity, ts_activity)
 
             # Remove from dict and save dict
             webhook_updates[str(athlete_id)].remove(activity)
@@ -297,11 +292,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     data = json.dumps(response)
 
                     # Get start_date (UTC) and convert to UTC timestamp
-                    start_date_epoch = get_epoch(event['start_date'])
-                    #timestamp = event['start_date']
-                    #timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
-                    #ts_activity = calendar.timegm(timestamp_dt.timetuple())
-                    #ts_activity = int(ts_activity)
+                    ts_activity = get_epoch(event['start_date'])
 
                     # Store the event in Splunk
                     write_to_splunk(index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
@@ -310,8 +301,8 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
                     # Get stream data for this activity
                     stream_data = get_activity_stream(access_token, activity_id, types)
                     if stream_data:
-                        parse_data(stream_data, activity_id, start_date_epoch)
+                        parse_data(stream_data, activity_id, ts_activity)
 
                     # Save the timestamp of the last event to a checkpoint
-                    athlete.update({'ts_activity': start_date_epoch})
+                    athlete.update({'ts_activity': ts_activity})
                     helper.save_check_point(stanza, athlete)
