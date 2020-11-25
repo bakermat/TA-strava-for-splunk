@@ -107,7 +107,7 @@ if [ $? -eq 0 ]; then
     #filename="${app}_${version}.tgz"
 
     # Now package it all into a tar.gz that can be uploaded to Splunkbase
-    COPYFILE_DISABLE=1 tar zcvf ${filename} ${app} 2>/dev/null
+    COPYFILE_DISABLE=1 tar zcf ${filename} ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} : SUCCESS"
