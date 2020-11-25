@@ -55,17 +55,10 @@ pipelines:
       - step:
           name: Deploy to Splunkbase
           script:
-            #- wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
-            #- pip install splunk-appinspect.tar.gz 
-            #- mkdir /tmp/$APP_NAME
-            #- git archive --format tar HEAD | tar --exclude-vcs --exclude=bitbucket-pipelines.yml -xC /tmp/$APP_NAME
-            #- splunk-appinspect inspect $BITBUCKET_CLONE_DIR/$APP_NAME.tgz --mode precert --included-tags cloud
-            #- splunk-appinspect inspect /tmp/$APP_NAME --mode precert --included-tags cloud
             - pip install jq
+            - pwd
             - cd $BITBUCKET_CLONE_DIR
-            #- tar czvf /tmp/$APP_NAME.tgz $APP_NAME
-            #- ls -ltr /tmp
+            - pwd
             - curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME.tgz" -F "files[]=@/$BITBUCKET_CLONE_DIR/$APP_NAME.tgz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
-            # - pip install jq
             - response=$(curl -X GET -u $SPLUNK_USR:$SPLUNK_PWD --url "https://api.splunk.com/2.0/rest/login/splunk" | jq -r '.data.token')
             - 'curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME.tgz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"'
