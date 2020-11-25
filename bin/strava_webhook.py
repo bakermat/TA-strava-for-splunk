@@ -47,7 +47,7 @@ class ModInputstrava_webhook(modinput_wrapper.base_modinput.BaseModInput):
         For other input types, arguments should be get from input_module. Defining new input types could be easier.
         """
         scheme.add_argument(smi.Argument("port", title="Port",
-                                         description="",
+                                         description="Port for the local webserver to listen on.",
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("verify_token", title="Verify Token",
@@ -55,15 +55,15 @@ class ModInputstrava_webhook(modinput_wrapper.base_modinput.BaseModInput):
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("callback_url", title="Callback URL",
-                                         description="Callback URL for Strava to reach this webserver, needs to be publicly reachable.",
+                                         description="URL of your webserver for Strava to connect to, this needs to be HTTPS and publicly reachable.",
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("cert_file", title="Cert file",
-                                         description="",
+                                         description="The certificate or certificate chain file used for responding to incoming HTTPS requests. Required to be signed by a public CA.",
                                          required_on_create=True,
                                          required_on_edit=False))
         scheme.add_argument(smi.Argument("key_file", title="Key file",
-                                         description="",
+                                         description="Private key that corresponds with the public key above.",
                                          required_on_create=True,
                                          required_on_edit=False))
         return scheme

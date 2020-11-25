@@ -2,7 +2,7 @@
     "meta": {
         "name": "TA-strava-for-splunk",
         "displayName": "Strava for Splunk",
-        "version": "APP_VERSION",
+        "version": "3.0.0",
         "apiVersion": "3.0.0",
         "restRoot": "TA_strava_for_splunk"
     },
@@ -129,6 +129,18 @@
                         "label": "Status"
                     },
                     {
+                        "field": "access_code",
+                        "label": "Access Code"
+                    },
+                    {
+                        "field": "start_time",
+                        "label": "Start Time"
+                    },
+                    {
+                        "field": "reindex_data",
+                        "label": "Reindex data"
+                    },
+                    {
                         "field": "port",
                         "label": "Port"
                     },
@@ -147,18 +159,6 @@
                     {
                         "field": "key_file",
                         "label": "Key file"
-                    },
-                    {
-                        "field": "access_code",
-                        "label": "Access Code"
-                    },
-                    {
-                        "field": "start_time",
-                        "label": "Start Time"
-                    },
-                    {
-                        "field": "reindex_data",
-                        "label": "Reindex data"
                     }
                 ],
                 "actions": [
@@ -328,7 +328,7 @@
                         {
                             "field": "port",
                             "label": "Port",
-                            "help": "",
+                            "help": "Port for the local webserver to listen on.",
                             "required": true,
                             "type": "text",
                             "defaultValue": "4443",
@@ -360,9 +360,10 @@
                         {
                             "field": "callback_url",
                             "label": "Callback URL",
-                            "help": "Callback URL for Strava to reach this webserver, needs to be publicly reachable.",
+                            "help": "URL of your webserver for Strava to connect to, this needs to be HTTPS and publicly reachable.",
                             "required": true,
                             "type": "text",
+                            "defaultValue": "https://webhook.mywebsite.com:4443",
                             "validators": [
                                 {
                                     "type": "string",
@@ -375,10 +376,10 @@
                         {
                             "field": "cert_file",
                             "label": "Cert file",
-                            "help": "",
+                            "help": "The certificate or certificate chain file used for responding to incoming HTTPS requests. Required to be signed by a public CA.",
                             "required": true,
                             "type": "text",
-                            "defaultValue": "/opt/splunk/etc/auth/splunkweb/cert.pem",
+                            "defaultValue": "/opt/splunk/etc/auth/YOUR_DIR/fullchain.pem",
                             "validators": [
                                 {
                                     "type": "string",
@@ -391,10 +392,10 @@
                         {
                             "field": "key_file",
                             "label": "Key file",
-                            "help": "",
+                            "help": "Private key that corresponds with the public key above.",
                             "required": true,
                             "type": "text",
-                            "defaultValue": "/opt/splunk/etc/auth/splunkweb/privkey.pem",
+                            "defaultValue": "/opt/splunk/etc/auth/YOUR_DIR/privkey.pem",
                             "validators": [
                                 {
                                     "type": "string",

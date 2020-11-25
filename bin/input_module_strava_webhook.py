@@ -148,12 +148,17 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
             response.raise_for_status()
         except Exception:
             if 'already exists' in response.text:
-                return get_webhook(client_id, client_secret)
+                webhook_details = get_webhook(client_id, client_secret)
+                helper.log_info(webhook_details)
             if 'GET to callback URL does not return 200' in response.text:
                 helper.log_error(f'Error: Strava can\'t reach {callback_url}')
-                return response.json()
+            if 'not verifiable' in response.text:
+                helper.log_error(f'Error: Strava can\'t verify {callback_url}. URL incorrect or server not using public CA certificate.')
+            else:
+                helper.log_error(f'{response.status_code} Error: {response.text}')
         else:
-            return f'Webhook created: {response.json}'
+            response = response.json()
+            helper.log_info(f"Webhook created successfully: ID {response['id']}")
 
     def get_webhook(client_id, client_secret):
         """Gets webhook details"""
@@ -190,8 +195,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
 
     # Get webhook details. If it doesn't exist, create it.
     get_webhook = get_webhook(client_id, client_secret)
-    if not get_webhook:
-        response = create_webhook(client_id, client_secret, verify_token, callback_url)
-        helper.log_info(response)
-    else:
+    if get_webhook:
         helper.log_info(f'Existing webhook: {get_webhook}')
+    else:
+        create_webhook(client_id, client_secret, verify_token, callback_url)

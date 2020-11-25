@@ -57,7 +57,7 @@ fields = [
         'callback_url',
         required=True,
         encrypted=False,
-        default=None,
+        default='https://webhook.mywebsite.com:4443',
         validator=validator.String(
             min_len=0, 
             max_len=8192, 
@@ -67,7 +67,7 @@ fields = [
         'cert_file',
         required=True,
         encrypted=False,
-        default='/opt/splunk/etc/auth/splunkweb/cert.pem',
+        default='/opt/splunk/etc/auth/YOUR_DIR/fullchain.pem',
         validator=validator.String(
             min_len=0, 
             max_len=8192, 
@@ -77,7 +77,7 @@ fields = [
         'key_file',
         required=True,
         encrypted=False,
-        default='/opt/splunk/etc/auth/splunkweb/privkey.pem',
+        default='/opt/splunk/etc/auth/YOUR_DIR/privkey.pem',
         validator=validator.String(
             min_len=0, 
             max_len=8192, 

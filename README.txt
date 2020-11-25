@@ -39,8 +39,9 @@ v2.x support multiple Strava user accounts, use one data input per Strava accoun
 
 ### Release Notes
 v3.0.0
-- Added support for activity streams, which allow for vendor-agnostic second-by-second analysis of all sensor data in an activity (time, distance, heart rate, power, altitude and more). Requires reindexing data if you want it for activities already in Splunk.
+- Added support for activity streams, which allow for second-by-second analysis of all sensor data in an activity (time, distance, heart rate, power, altitude and more). Requires reindexing data if you want it for activities already in Splunk.
 - Removed support for undocumented feature to retrieve raw workout files in favour of the stream support for a universal approach.
+- Improved documentation and logging for the webhook input.
 - Removed hardcoded host and source inputs to comply with best practices.
 - Improved Strava API rate limit handling.
 - Python 3 only version, so only supported on Splunk Enterprise 8.0 or later.
