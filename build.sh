@@ -93,6 +93,7 @@ find ${dir} -type d -print0 | xargs -0 chmod 0755
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 if [ $? -eq 0 ]; then
     #datetime=$(date +%F_%H-%M-%S)
+    ls -lah 
     cd ${dir}/..
     filename="${app}.tgz"
     #filename="${app}_${version}.tgz"
@@ -102,9 +103,9 @@ if [ $? -eq 0 ]; then
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} in $PWD: SUCCESS"
-        ls -lah
     else
         echo "- Final app is ${filename} in $PWD: FAIL"
+        ls -lah
     fi
 else
     echo "Error reading app.conf, is app location correct? : FAIL"

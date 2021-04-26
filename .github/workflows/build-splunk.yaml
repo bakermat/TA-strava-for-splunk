@@ -33,18 +33,18 @@ jobs:
       run: bandit -r ./bin/*.py
     - name: Build script
       run: ./build.sh
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: TA-strava-for-splunk.tgz
-        path: ./
-        retention-days: 5
+    #- name: Upload artifact
+    #  uses: actions/upload-artifact@v2
+    #  with:
+    #    name: TA-strava-for-splunk.tgz
+    #    path: ./
+    #    retention-days: 5
     - name: Splunk AppInspect Test
       run: |
         ls -lah
         wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
         pip install splunk-appinspect.tar.gz 
-        splunk-appinspect inspect ../TA-strava-for-splunk.tgz --mode precert --included-tags cloud
+        splunk-appinspect inspect ./TA-strava-for-splunk.tgz --mode precert --included-tags cloud
         #- splunk-appinspect inspect ../$APP_NAME*.tgz --mode precert --included-tags cloud | grep "\[  F  ]\|\[  E  ]\|\[  M  ]\[  W  ]"
     # SAMPLE FILE
     # - name: Install dependencies
