@@ -187,7 +187,10 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
 
     # Setup HTTP Server instance
     httpd = HTTPServer(('', port), SimpleHTTPRequestHandler)
-    httpd.socket = ssl.wrap_socket(httpd.socket, keyfile=key_file, certfile=cert_file, server_side=True, ssl_version=ssl.PROTOCOL_TLS)
+    sslctx = ssl.SSLContext()
+    sslctx.check_hostname = False
+    sslctx.load_cert_chain(certfile=cert_file, keyfile=key_file)
+    httpd.socket = sslctx.wrap_socket(httpd.socket, server_side=True, ssl_version=ssl.PROTOCOL_TLS)
 
     helper.log_info(f'Starting HTTPS web server on port {port}.')
     thread = Thread(target=httpd.serve_forever)
