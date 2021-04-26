@@ -4,6 +4,8 @@ dir=.
 
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 
+rm -f requirements.txt
+
 # Get latest version of spl from pre-mod directory and extract to current folder
 #filename=$(ls -t pre-mod/* | head -1)
 #tar xvzf $filename
@@ -99,7 +101,7 @@ if [ $? -eq 0 ]; then
     #filename="${app}_${version}.tgz"
 
     # Now package it all into a tar.gz that can be uploaded to Splunkbase
-    COPYFILE_DISABLE=1 tar zcf ${filename} ${app} 2>/dev/null
+    COPYFILE_DISABLE=1 tar --exclude-vcs zcf ${filename} ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} in $PWD: SUCCESS"
