@@ -4,6 +4,7 @@ dir=.
 
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 
+rm -rf .git*
 rm -f requirements.txt
 
 # Get latest version of spl from pre-mod directory and extract to current folder
