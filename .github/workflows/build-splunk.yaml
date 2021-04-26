@@ -31,13 +31,14 @@ jobs:
       run: pylint ./bin/input_module_*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks
     - name: Bandit Security Test
       run: bandit -r ./bin/*.py
-    - name: Build files
+    - name: Build script
+      run: ./build.sh
+    - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: TA-strava-for-splunk.tgz
         path: /tmp
         retention-days: 5
-        run: ./build.sh
           #- mv /tmp/*.tgz ./
     - name: Splunk AppInspect Test
       uses: actions/download-artifact@v2
