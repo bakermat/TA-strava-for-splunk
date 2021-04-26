@@ -1,15 +1,6 @@
 app='TA-strava-for-splunk'
 build_folder='build_files'
-dir='/tmp/'${app}
-
-mkdir -p ${dir}
-cp -r * ${dir}/
-
-rm -rf ${dir}/.git*
-rm -rf ${dir}/bitbucket-pipelines.yml
-rm -rf ${dir}/local
-rm -rf ${dir}/metadata/local.meta
-rm -rf ${dir}/bin/__pycache__
+dir=.
 
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 
@@ -102,7 +93,7 @@ find ${dir} -type d -print0 | xargs -0 chmod 0755
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 if [ $? -eq 0 ]; then
     #datetime=$(date +%F_%H-%M-%S)
-    cd ${dir}/..
+    #cd ${dir}/..
     filename="${app}.tgz"
     #filename="${app}_${version}.tgz"
 
