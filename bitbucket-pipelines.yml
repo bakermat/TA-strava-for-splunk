@@ -24,7 +24,7 @@ pipelines:
        name: Bandit Security Test
        caches:
            - pip
-       script:
+       run:
            - pip install bandit
            - bandit -r $BITBUCKET_CLONE_DIR/bin/*.py
     - step:
