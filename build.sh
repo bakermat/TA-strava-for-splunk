@@ -106,7 +106,7 @@ if [ $? -eq 0 ]; then
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} in $PWD: SUCCESS"
-        ls -lah
+        mv ${filename} ${app}
     else
         echo "- Final app is ${filename} in $PWD: FAIL"
         ls -lah
