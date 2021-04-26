@@ -110,18 +110,18 @@ if [ $? -eq 0 ]; then
     COPYFILE_DISABLE=1 tar zcf ${filename} ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
-        echo "- Final app is ${filename} : SUCCESS"
+        echo "- Final app is ${filename} in ${pwd}: SUCCESS"
     else
-        echo "- Final app is ${filename} : FAIL"
+        echo "- Final app is ${filename} in ${pwd}: FAIL"
     fi
 else
     echo "Error reading app.conf, is app location correct? : FAIL"
 fi
 
 # Delete the $app folder
-rm -rf ${dir}
-if [ $? -eq 0 ]; then
-    echo "- Removing temporary ${app} folder : SUCCESS"
-else
-    echo "- Removing temporary ${app} folder : FAIL"
-fi
+#rm -rf ${dir}
+#if [ $? -eq 0 ]; then
+#    echo "- Removing temporary ${app} folder : SUCCESS"
+#else
+#    echo "- Removing temporary ${app} folder : FAIL"
+#fi
