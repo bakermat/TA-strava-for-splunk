@@ -110,9 +110,10 @@ if [ $? -eq 0 ]; then
     COPYFILE_DISABLE=1 tar zcf ${filename} ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
-        echo "- Final app is ${filename} in ${pwd}: SUCCESS"
+        echo "- Final app is ${filename} in $PWD: SUCCESS"
+        ls -lah
     else
-        echo "- Final app is ${filename} in ${pwd}: FAIL"
+        echo "- Final app is ${filename} in $PWD: FAIL"
     fi
 else
     echo "Error reading app.conf, is app location correct? : FAIL"
