@@ -93,7 +93,7 @@ find ${dir} -type d -print0 | xargs -0 chmod 0755
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 if [ $? -eq 0 ]; then
     #datetime=$(date +%F_%H-%M-%S)
-    #cd ${dir}/..
+    cd ${dir}/..
     filename="${app}.tgz"
     #filename="${app}_${version}.tgz"
 
