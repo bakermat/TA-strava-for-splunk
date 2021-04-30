@@ -5,9 +5,6 @@ dir=.
 echo "Working directory is $PWD"
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 
-#rm -rf .git*
-#rm -f requirements.txt
-
 # Inserts the helplinks.js line before </body>
 sed -i'' 's#<\/body.*#<script src="${make_url(app_js + '\''/helplinks.js'\'')}"></script></body>#' ${dir}/appserver/templates/base.html 2>/dev/null
 if [ $? -eq 0 ]; then
@@ -74,8 +71,8 @@ else
 fi
 
 # Remove ${build_folder} and build script so it doesn't end up in tgz file
-rm -rf ${dir}/${build_folder}
-rm -rf ${dir}/build.sh
+#rm -rf ${dir}/${build_folder}
+#rm -rf ${dir}/.github
 
 # Set permissions
 find ${dir} -type f -print0 | xargs -0 chmod 0644
@@ -86,11 +83,13 @@ find ${dir} -type d -print0 | xargs -0 chmod 0755
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 if [ $? -eq 0 ]; then
     ls -lah 
+    echo $PWD
     cd ${dir}/..
+    echo $PWD
     filename="${app}.tgz"
 
     # Now package it all into a tar.gz that can be uploaded to Splunkbase
-    COPYFILE_DISABLE=1 tar zcf ${filename} --exclude-vcs ${app} 2>/dev/null
+    COPYFILE_DISABLE=1 tar zcf ${filename} --exclude='.github' --exclude='.ci' ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} in $PWD: SUCCESS"
