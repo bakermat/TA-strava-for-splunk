@@ -32,6 +32,7 @@ By default the strava_athlete lookup table will be populated with athlete ID, fi
 ### Release Notes
 v3.0.1
 - Improved handling of activities older than 4000 days, now supporting activities older than 9125 days (~25 years).
+- Updated SSL handling of webhook.
 
 v3.0.0
 - Added support for activity streams, which allow for second-by-second analysis of all sensor data in an activity (time, distance, heart rate, power, altitude and more). Requires reindexing data if you want it for activities already in Splunk.
