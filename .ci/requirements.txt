@@ -1,3 +1,4 @@
 bandit
+jq
 pylint
 requests

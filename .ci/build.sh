@@ -70,10 +70,6 @@ else
     echo "- Replacing ${dir}/default/data/ui/nav/default.xml : FAIL"
 fi
 
-# Remove ${build_folder} and build script so it doesn't end up in tgz file
-#rm -rf ${dir}/${build_folder}
-#rm -rf ${dir}/.github
-
 # Set permissions
 find ${dir} -type f -print0 | xargs -0 chmod 0644
 find ${dir}/bin -type f -print0 | xargs -0 chmod 0755

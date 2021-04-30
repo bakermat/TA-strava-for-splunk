@@ -2,7 +2,7 @@ name: Build Strava TA
 on: 
   push:
     branches:
-      - develop
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest

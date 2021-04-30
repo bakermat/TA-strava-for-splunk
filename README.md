@@ -17,7 +17,7 @@ Strava uses OAuth2 authentication, which requires a few initial steps. This is o
 Version 3.0.0 introduces the ability to download activity streams from Strava, which contains all your sensor data (e.g. heart rate, cadence, coordinates, distance, altitude, power and others) for your activities.
 
 ### Getting FTP & weight into a lookup table
-By default the strava_athlete lookup table will be populated with athlete ID, firstname and lastname. If you don't care about FTP or weight, no action is required. If you do want to get FTP and weight, Strava requires additional security permissions (profile:read_all) so you will have to get a new access token if you're upgrading from pre-2.6.0 to 2.6.0. Follow step 2 in the detailed instructions, delete your current input and create a new input with a different name and the updated access code. Make sure to put in a starting time that's after your last activity in Splunk to avoid ingesting older activities.
+The TA will populate a lookup table named `strava_athlete` with athlete ID, firstname and lastname. If you don't care about FTP or weight, no action is required. If you do want to get FTP and weight, Strava requires additional security permissions (`profile:read_all`) so you will have to get a new access token if you're upgrading from pre-2.6.0 to 2.6.0. Follow step 2 in the detailed instructions, delete your current input and create a new input with a different name and the updated access code. Make sure to put in a starting time that's after your last activity in Splunk to avoid ingesting older activities.
 
 ### Troubleshooting
 - Logs are in `$SPLUNK_HOME/var/log/splunk/ta_strava_for_splunk_strava_api.log`.
@@ -28,6 +28,7 @@ By default the strava_athlete lookup table will be populated with athlete ID, fi
 v3.0.1
 - Added support for activities of up to 9125 days old (~25 years).
 - Updated SSL handling of webhook.
+- Simplified README
 
 v3.0.0
 - Added support for activity streams, which allow for second-by-second analysis of all sensor data in an activity (time, distance, heart rate, power, altitude and more). Requires reindexing data if you want it for activities already in Splunk.
@@ -40,7 +41,7 @@ v3.0.0
 
 v2.6.0
 - Added 'strava_athlete' lookup table to store athlete id, firstname, lastname, ftp and weight. 
-By default the lookup table will be populated with athlete ID, firstname and lastname. To get FTP and weight, you will have to get a new access token as it requires additional Strava's permissions (profile:read_all), so please follow step 2 above which has the updated URL that includes that step.
+By default the lookup table will be populated with athlete ID, firstname and lastname. To get FTP and weight, you will have to get a new access token as it requires additional Strava's permissions (`profile:read_all`), so please follow step 2 above which has the updated URL that includes that step.
 
 v2.5.3
 - Include efforts for hidden segments when downloading detailed activity.
