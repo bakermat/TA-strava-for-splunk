@@ -1,8 +1,8 @@
 app='TA-strava-for-splunk'
-build_folder=.
-dir=..
+build_folder=.ci
+dir=.
 
-echo "Working directory is ${pwd}"
+echo "Working directory is $PWD"
 version=$(cat ${dir}/default/app.conf | grep version | grep -o '.....$')
 
 #rm -rf .git*
