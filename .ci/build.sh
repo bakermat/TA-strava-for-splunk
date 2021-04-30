@@ -89,7 +89,7 @@ if [ $? -eq 0 ]; then
     filename="${app}.tgz"
 
     # Now package it all into a tar.gz that can be uploaded to Splunkbase
-    COPYFILE_DISABLE=1 tar zcf ${filename} --exclude='.github' --exclude='.ci' ${app} 2>/dev/null
+    COPYFILE_DISABLE=1 tar zcf ${filename} --exclude='.git*' --exclude='.ci' --exclude-vcs ${app} 2>/dev/null
 
     if [ $? -eq 0 ]; then
         echo "- Final app is ${filename} in $PWD: SUCCESS"
