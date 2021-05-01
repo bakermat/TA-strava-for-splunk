@@ -40,12 +40,12 @@ jobs:
     #   run: bandit -r ./bin/*.py
     - name: Build script
       run: .ci/build.sh
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v2
-    #   with:
-    #     name: TA-strava-for-splunk.tgz
-    #     path: ./TA-strava-for-splunk.tgz
-    #     retention-days: 5
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: TA-strava-for-splunk.tgz
+        path: ./TA-strava-for-splunk.tgz
+        retention-days: 1
     #- name: Splunk AppInspect Test
     #  run: |
     #    ls -lah
