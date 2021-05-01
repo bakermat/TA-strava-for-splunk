@@ -1,7 +1,7 @@
 ## Overview
-The Strava Add-on for Splunk let's you retrieve activity data from Strava's API to do fitness analysis. It uses Splunk checkpoints to ensure that only new activities are indexed.
- 
-Strava uses OAuth2 authentication, which requires a few initial steps. This is only required once.
+The Strava Add-on for Splunk let's you retrieve activity data from Strava's API to do fitness analysis. To interact with the Strava API a few steps are necessary, this only needs to be setup once.
+
+This TA is open source and can be found on https://github.com/bakermat/TA-strava-for-splunk, please submit any issues or pull requests there.
 
 ## How to use this add-on
 #### Getting started
@@ -13,8 +13,14 @@ Strava uses OAuth2 authentication, which requires a few initial steps. This is o
 - The access code is in the URL, for example if the URL = `http://localhost/?state=&code=1263bc141604aaaddfc30a3161558b34c00d9e56&scope=read,activity:read_all,profile:read_all` then the access code is `1263bc141604aaaddfc30a3161558b34c00d9e56`.
 - Copy that string along with the `Client ID` and `Client Secret` into the Strava for Splunk add-on's configuration -> Add-on parameters page.
 
-### New in v3.0: getting second-by-second data for existing and new activities.
-Version 3.0.0 introduces the ability to download activity streams from Strava, which contains all your sensor data (e.g. heart rate, cadence, coordinates, distance, altitude, power and others) for your activities.
+### New features:
+v3.0: Getting second-by-second data using activity streams, using the sourcetype `strava:activities:streams`.
+v2.6: Added lookup tables with rider names, weight and FTP.
+v2.5:
+- Added field to correlate Garmin Connect workout with Strava activity, using field `garminActivityId`.
+- Added support for webhooks.
+
+v2.1: Added support for multiple Strava athletes. Use this by distributing `https://www.strava.com/oauth/authorize?client_id=[client_id]&redirect_uri=http://localhost&response_type=code&scope=activity:read_all,profile:read_all` to all users that you want to get data from, using the `Client ID` from the person that's the Splunk admin.
 
 ### Getting FTP & weight into a lookup table
 The TA will populate a lookup table named `strava_athlete` with athlete ID, firstname and lastname. If you don't care about FTP or weight, no action is required. If you do want to get FTP and weight, Strava requires additional permissions (`profile:read_all`) so you will have to get a new access token if you're upgrading from pre-2.6.0 to 2.6.0. Follow step 2 in the detailed instructions, delete your current input and create a new input with a different name and the updated access code. Make sure to put in a starting time that's after your last activity in Splunk to avoid ingesting older activities.
@@ -27,8 +33,7 @@ The TA will populate a lookup table named `strava_athlete` with athlete ID, firs
 ### Release Notes
 v3.0.1
 - Added support for activities of up to 9125 days old (~25 years).
-- Updated SSL handling of webhook.
-- Simplified README
+- Updated TLS handling of webhook.
 
 v3.0.0
 - Added support for activity streams, which allow for second-by-second analysis of all sensor data in an activity (time, distance, heart rate, power, altitude and more). Requires reindexing data if you want it for activities already in Splunk.
@@ -41,7 +46,7 @@ v3.0.0
 
 v2.6.0
 - Added 'strava_athlete' lookup table to store athlete id, firstname, lastname, ftp and weight. 
-By default the lookup table will be populated with athlete ID, firstname and lastname. To get FTP and weight, you will have to get a new access token as it requires additional Strava's permissions (`profile:read_all`), so please follow step 2 above which has the updated URL that includes that step.
+By default the lookup table will be populated with athlete ID, firstname and lastname. To get FTP and weight, you will have to get a new access token as it requires additional Strava's permissions (`profile:read_all`).
 
 v2.5.3
 - Include efforts for hidden segments when downloading detailed activity.

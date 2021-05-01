@@ -230,7 +230,7 @@
                         {
                             "field": "access_code",
                             "label": "Access Code",
-                            "help": "Go https://www.strava.com/oauth/authorize?client_id=<client_id>&redirect_uri=http://localhost&response_type=code&scope=activity:read_all, change Client ID in URL and copy string after 'code=' here.",
+                            "help": "Go https://www.strava.com/oauth/authorize?client_id=<client_id>&redirect_uri=http://localhost&response_type=code&scope=activity:read_all,profile:read_all, change <client_id>,copy string after 'code='.",
                             "required": true,
                             "type": "text",
                             "encrypted": true,
