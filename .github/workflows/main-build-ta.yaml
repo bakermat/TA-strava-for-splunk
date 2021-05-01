@@ -52,6 +52,43 @@ jobs:
     #    wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
     #    pip install splunk-appinspect.tar.gz 
     #    splunk-appinspect inspect ./TA-strava-for-splunk.tgz --mode precert --included-tags cloud
+    - name: Download artifact
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        # Optional, GitHub token
+        #github_token: ${{secrets.GITHUB_TOKEN}}
+        # Required, workflow file name or ID
+        workflow: develop-build-ta.yml
+        # Optional, the status or conclusion of a completed workflow to search for
+        # Can be one of a workflow conclusion::
+        # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
+        # Or a workflow status:
+        # "completed", "in_progress", "queued"
+        # Default: "completed,success"
+        workflow_conclusion: success
+        # Optional, will get head commit SHA
+        #pr: ${{github.event.pull_request.number}}
+        # Optional, no need to specify if PR is
+        #commit: ${{github.event.pull_request.head.sha}}
+        # Optional, will use the branch
+        #branch: master
+        # Optional, defaults to all types
+        #event: push
+        # Optional, will use specified workflow run
+        #run_id: 1122334455
+        # Optional, run number from the workflow
+        #run_number: 34
+        # Optional, uploaded artifact name,
+        # will download all artifacts if not specified
+        # and extract them in respective subdirectories
+        # https://github.com/actions/download-artifact#download-all-artifacts
+        #name: artifact_name
+        # Optional, directory where to extract artifact
+        #path: extract_here
+        # Optional, defaults to current repo
+        #repo: ${{github.repository}}
+    - name: Show folder contents
+      run: ls -lah
     - name: Deploy to Splunkbase
       env:
         SPLUNK_USR: ${{ secrets.SPLUNK_USR }}
@@ -59,4 +96,4 @@ jobs:
       run: |
         curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME.tgz" -F "files[]=@$GITHUB_WORKSPACE/$APP_NAME.tgz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
         response=$(curl -X GET -u $SPLUNK_USR:$SPLUNK_PWD --url "https://api.splunk.com/2.0/rest/login/splunk" | jq -r '.data.token')
-        'curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME.tgz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"'
+        curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME.tgz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"
