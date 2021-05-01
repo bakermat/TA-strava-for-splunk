@@ -60,7 +60,7 @@ jobs:
         # Optional, GitHub token
         #github_token: ${{secrets.GITHUB_TOKEN}}
         # Required, workflow file name or ID
-        workflow: main-build-ta.yml
+        workflow: main-build-ta.yaml
         # Optional, the status or conclusion of a completed workflow to search for
         # Can be one of a workflow conclusion::
         # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
