@@ -52,8 +52,6 @@ jobs:
     #    wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
     #    pip install splunk-appinspect.tar.gz 
     #    splunk-appinspect inspect ./TA-strava-for-splunk.tgz --mode precert --included-tags cloud
-    - name: Show folder contents 1
-      run: ls -lah
     - name: Download artifact
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -89,15 +87,11 @@ jobs:
         #path: upload
         # Optional, defaults to current repo
         #repo: ${{github.repository}}
-    - name: Show folder contents 2
-      run: ls -lah
-    - name: Show folder contents 3
-      run: ls -lah upload
     - name: Deploy to Splunkbase
       env:
         SPLUNK_USR: ${{ secrets.SPLUNK_USR }}
         SPLUNK_PWD: ${{ secrets.SPLUNK_PWD }}
       run: |
-        curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME.tgz" -F "files[]=@$GITHUB_WORKSPACE/$APP_NAME.tgz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
+        curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME.tgz" -F "files[]=@$GITHUB_WORKSPACE/$APP_NAME.tgz/$APP_NAME.tgz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
         response=$(curl -X GET -u $SPLUNK_USR:$SPLUNK_PWD --url "https://api.splunk.com/2.0/rest/login/splunk" | jq -r '.data.token')
         curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME.tgz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"
