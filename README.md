@@ -6,9 +6,9 @@ Strava uses OAuth2 authentication, which requires a few initial steps. This is o
 ## How to use this add-on
 #### Getting started
 - Create a Strava app if you haven't done so yet, go to https://www.strava.com/settings/api. This is how Splunk will interact with the Strava API.
-- You can use anything (e.g.) for `Website`. For `Authorization Callback Domain` you can use `localhost` if you don't know what to fill in here.
+- You can use anything for `Website`. For `Authorization Callback Domain` you can use `localhost` if you don't know what to fill in here.
 - Make note of the `Client ID` and `Client Secret`, you'll need this in Splunk.
-- Go to https://www.strava.com/oauth/authorize?client_id=[client_id]&redirect_uri=http://localhost&response_type=code&scope=activity:read_all,profile:read_all and make sure you replace [client_id] with your Client ID.
+- Go to https://www.strava.com/oauth/authorize?client_id=[client_id]&redirect_uri=http://localhost&response_type=code&scope=activity:read_all,profile:read_all and make sure you replace `[client_id]` with your Client ID.
 - Click Authorize, you'll then get the access code that's required to start using Strava's API.
 - The access code is in the URL, for example if the URL = `http://localhost/?state=&code=1263bc141604aaaddfc30a3161558b34c00d9e56&scope=read,activity:read_all,profile:read_all` then the access code is `1263bc141604aaaddfc30a3161558b34c00d9e56`.
 - Copy that string along with the `Client ID` and `Client Secret` into the Strava for Splunk add-on's configuration -> Add-on parameters page.
@@ -17,7 +17,7 @@ Strava uses OAuth2 authentication, which requires a few initial steps. This is o
 Version 3.0.0 introduces the ability to download activity streams from Strava, which contains all your sensor data (e.g. heart rate, cadence, coordinates, distance, altitude, power and others) for your activities.
 
 ### Getting FTP & weight into a lookup table
-The TA will populate a lookup table named `strava_athlete` with athlete ID, firstname and lastname. If you don't care about FTP or weight, no action is required. If you do want to get FTP and weight, Strava requires additional security permissions (`profile:read_all`) so you will have to get a new access token if you're upgrading from pre-2.6.0 to 2.6.0. Follow step 2 in the detailed instructions, delete your current input and create a new input with a different name and the updated access code. Make sure to put in a starting time that's after your last activity in Splunk to avoid ingesting older activities.
+The TA will populate a lookup table named `strava_athlete` with athlete ID, firstname and lastname. If you don't care about FTP or weight, no action is required. If you do want to get FTP and weight, Strava requires additional permissions (`profile:read_all`) so you will have to get a new access token if you're upgrading from pre-2.6.0 to 2.6.0. Follow step 2 in the detailed instructions, delete your current input and create a new input with a different name and the updated access code. Make sure to put in a starting time that's after your last activity in Splunk to avoid ingesting older activities.
 
 ### Troubleshooting
 - Logs are in `$SPLUNK_HOME/var/log/splunk/ta_strava_for_splunk_strava_api.log`.

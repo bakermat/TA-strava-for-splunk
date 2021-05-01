@@ -1,4 +1,4 @@
-name: Build Strava TA
+name: Run tests & build TA
 on: 
   push:
     branches:

@@ -38,14 +38,14 @@ jobs:
     #   run: pylint ./bin/input_module_*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks
     # - name: Bandit Security Test
     #   run: bandit -r ./bin/*.py
-    - name: Build script
-      run: .ci/build.sh
-    - name: Upload artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: TA-strava-for-splunk.tgz
-        path: ./TA-strava-for-splunk.tgz
-        retention-days: 1
+    # - name: Build script
+    #   run: .ci/build.sh
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: TA-strava-for-splunk.tgz
+    #     path: ./TA-strava-for-splunk.tgz
+    #     retention-days: 1
     #- name: Splunk AppInspect Test
     #  run: |
     #    ls -lah
@@ -86,7 +86,7 @@ jobs:
         # https://github.com/actions/download-artifact#download-all-artifacts
         #name: artifact_name
         # Optional, directory where to extract artifact
-        path: upload
+        #path: upload
         # Optional, defaults to current repo
         #repo: ${{github.repository}}
     - name: Show folder contents 2
