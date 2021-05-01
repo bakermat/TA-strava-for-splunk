@@ -52,13 +52,15 @@ jobs:
     #    wget --output-document splunk-appinspect.tar.gz https://download.splunk.com/misc/appinspect/splunk-appinspect-latest.tar.gz
     #    pip install splunk-appinspect.tar.gz 
     #    splunk-appinspect inspect ./TA-strava-for-splunk.tgz --mode precert --included-tags cloud
+    - name: Show folder contents 1
+      run: ls -lah
     - name: Download artifact
       uses: dawidd6/action-download-artifact@v2
       with:
         # Optional, GitHub token
         #github_token: ${{secrets.GITHUB_TOKEN}}
         # Required, workflow file name or ID
-        workflow: develop-build-ta.yml
+        workflow: main-build-ta.yml
         # Optional, the status or conclusion of a completed workflow to search for
         # Can be one of a workflow conclusion::
         # "failure", "success", "neutral", "cancelled", "skipped", "timed_out", "action_required"
@@ -87,7 +89,7 @@ jobs:
         #path: extract_here
         # Optional, defaults to current repo
         #repo: ${{github.repository}}
-    - name: Show folder contents
+    - name: Show folder contents 2
       run: ls -lah
     - name: Deploy to Splunkbase
       env:
