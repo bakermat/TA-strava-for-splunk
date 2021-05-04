@@ -1,0 +1,413 @@
+{
+    "meta": {
+        "name": "TA-strava-for-splunk",
+        "displayName": "Strava for Splunk",
+        "version": "3.0.0",
+        "apiVersion": "3.0.0",
+        "restRoot": "TA_strava_for_splunk"
+    },
+    "pages": {
+        "configuration": {
+            "title": "Configuration",
+            "description": "Set up your add-on",
+            "tabs": [
+                {
+                    "name": "logging",
+                    "title": "Logging",
+                    "entity": [
+                        {
+                            "field": "loglevel",
+                            "label": "Log level",
+                            "type": "singleSelect",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "label": "DEBUG",
+                                        "value": "DEBUG"
+                                    },
+                                    {
+                                        "label": "INFO",
+                                        "value": "INFO"
+                                    },
+                                    {
+                                        "label": "WARNING",
+                                        "value": "WARNING"
+                                    },
+                                    {
+                                        "label": "ERROR",
+                                        "value": "ERROR"
+                                    },
+                                    {
+                                        "label": "CRITICAL",
+                                        "value": "CRITICAL"
+                                    }
+                                ]
+                            },
+                            "defaultValue": "INFO"
+                        }
+                    ]
+                },
+                {
+                    "name": "additional_parameters",
+                    "title": "Add-on Settings",
+                    "entity": [
+                        {
+                            "field": "client_id",
+                            "label": "Client ID",
+                            "type": "text",
+                            "help": "",
+                            "required": true,
+                            "defaultValue": "",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "client_secret",
+                            "label": "Client Secret",
+                            "type": "text",
+                            "help": "",
+                            "required": true,
+                            "defaultValue": "",
+                            "encrypted": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of password is 8192"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        "inputs": {
+            "title": "Inputs",
+            "description": "Manage your data inputs",
+            "table": {
+                "header": [
+                    {
+                        "field": "name",
+                        "label": "Name"
+                    },
+                    {
+                        "field": "interval",
+                        "label": "Interval"
+                    },
+                    {
+                        "field": "index",
+                        "label": "Index"
+                    },
+                    {
+                        "field": "disabled",
+                        "label": "Status"
+                    }
+                ],
+                "moreInfo": [
+                    {
+                        "field": "name",
+                        "label": "Name"
+                    },
+                    {
+                        "field": "interval",
+                        "label": "Interval"
+                    },
+                    {
+                        "field": "index",
+                        "label": "Index"
+                    },
+                    {
+                        "field": "disabled",
+                        "label": "Status"
+                    },
+                    {
+                        "field": "access_code",
+                        "label": "Access Code"
+                    },
+                    {
+                        "field": "start_time",
+                        "label": "Start Time"
+                    },
+                    {
+                        "field": "reindex_data",
+                        "label": "Reindex data"
+                    },
+                    {
+                        "field": "port",
+                        "label": "Port"
+                    },
+                    {
+                        "field": "verify_token",
+                        "label": "Verify Token"
+                    },
+                    {
+                        "field": "callback_url",
+                        "label": "Callback URL"
+                    },
+                    {
+                        "field": "cert_file",
+                        "label": "Cert file"
+                    },
+                    {
+                        "field": "key_file",
+                        "label": "Key file"
+                    }
+                ],
+                "actions": [
+                    "edit",
+                    "enable",
+                    "delete",
+                    "clone"
+                ]
+            },
+            "services": [
+                {
+                    "name": "strava_api",
+                    "title": "Strava Activities",
+                    "entity": [
+                        {
+                            "field": "name",
+                            "label": "Name",
+                            "type": "text",
+                            "help": "Enter a unique name for the data input",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Input Name must start with a letter and followed by alphabetic letters, digits or underscores."
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Length of input name should be between 1 and 100"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "interval",
+                            "label": "Interval",
+                            "type": "text",
+                            "required": true,
+                            "help": "Time interval of input in seconds.",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$",
+                                    "errorMsg": "Interval must be an integer."
+                                }
+                            ]
+                        },
+                        {
+                            "field": "index",
+                            "label": "Index",
+                            "type": "singleSelect",
+                            "defaultValue": "default",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "blackList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Length of index name should be between 1 and 80."
+                                }
+                            ]
+                        },
+                        {
+                            "field": "access_code",
+                            "label": "Access Code",
+                            "help": "Go https://www.strava.com/oauth/authorize?client_id=<client_id>&redirect_uri=http://localhost&response_type=code&scope=activity:read_all, change Client ID in URL and copy string after 'code=' here.",
+                            "required": true,
+                            "type": "text",
+                            "encrypted": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of password is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "start_time",
+                            "label": "Start Time",
+                            "help": "Leave empty to get all activities. Enter the epoch timestamp (UTC time) of the first activity you want to capture. Conversion can be done http://www.epochconverter.com.",
+                            "required": false,
+                            "type": "text",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "reindex_data",
+                            "label": "Reindex data",
+                            "help": "Advanced use only: enable this to reindex data, starting from the Start Time specified above.",
+                            "required": false,
+                            "type": "checkbox"
+                        }
+                    ]
+                },
+                {
+                    "name": "strava_webhook",
+                    "title": "Strava Webhook",
+                    "entity": [
+                        {
+                            "field": "name",
+                            "label": "Name",
+                            "type": "text",
+                            "help": "Enter a unique name for the data input",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Input Name must start with a letter and followed by alphabetic letters, digits or underscores."
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100,
+                                    "errorMsg": "Length of input name should be between 1 and 100"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "interval",
+                            "label": "Interval",
+                            "type": "text",
+                            "required": true,
+                            "help": "Time interval of input in seconds.",
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^\\-[1-9]\\d*$|^\\d*$",
+                                    "errorMsg": "Interval must be an integer."
+                                }
+                            ]
+                        },
+                        {
+                            "field": "index",
+                            "label": "Index",
+                            "type": "singleSelect",
+                            "defaultValue": "default",
+                            "options": {
+                                "endpointUrl": "data/indexes",
+                                "blackList": "^_.*$",
+                                "createSearchChoice": true
+                            },
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 80,
+                                    "errorMsg": "Length of index name should be between 1 and 80."
+                                }
+                            ]
+                        },
+                        {
+                            "field": "port",
+                            "label": "Port",
+                            "help": "Port for the local webserver to listen on.",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "4443",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "verify_token",
+                            "label": "Verify Token",
+                            "help": "Used to configure and verify incoming requests from Strava's webhook for authentication.",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "sTr4va",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "callback_url",
+                            "label": "Callback URL",
+                            "help": "URL of your webserver for Strava to connect to, this needs to be HTTPS and publicly reachable.",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "https://webhook.mywebsite.com:4443",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "cert_file",
+                            "label": "Cert file",
+                            "help": "The certificate or certificate chain file used for responding to incoming HTTPS requests. Required to be signed by a public CA.",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "/opt/splunk/etc/auth/YOUR_DIR/fullchain.pem",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        },
+                        {
+                            "field": "key_file",
+                            "label": "Key file",
+                            "help": "Private key that corresponds with the public key above.",
+                            "required": true,
+                            "type": "text",
+                            "defaultValue": "/opt/splunk/etc/auth/YOUR_DIR/privkey.pem",
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 8192,
+                                    "errorMsg": "Max length of text input is 8192"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

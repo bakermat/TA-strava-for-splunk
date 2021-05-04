@@ -1,0 +1,60 @@
+name: Publish to Splunkbase
+on: 
+  push:
+    branches:
+      - main
+
+env:
+  SPLUNK_APP_ID: 4755
+  APP_NAME: 'TA-strava-for-splunk'
+  SPLUNK_VER: '8.0,8.1'
+  SPLUNK_VISIBILITY: false
+
+jobs:
+  publish_artifact:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        # This path is specific to Ubuntu
+        path: ~/.cache/pip
+        # Look to see if there is a cache hit for the corresponding requirements file
+        key: ${{ runner.os }}-pip-${{ hashFiles('.ci/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          ${{ runner.os }}-
+    - name: Install dependencies
+      run: | 
+        pip install --upgrade pip
+        pip install -r .ci/requirements-main.txt
+      # This will extract the artifact to $APP_NAME.tgz/$APP_NAME.tgz
+    - name: Download artifact from develop
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: develop-build-ta.yaml
+        workflow_conclusion: success
+    - name: Upload TA to Splunkbase
+      env:
+        SPLUNK_USR: ${{ secrets.SPLUNK_USR }}
+        SPLUNK_PWD: ${{ secrets.SPLUNK_PWD }}
+      run: |
+        curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME.tgz" -F "files[]=@$GITHUB_WORKSPACE/$APP_NAME.tgz/$APP_NAME.tgz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
+        response=$(curl -X GET -u $SPLUNK_USR:$SPLUNK_PWD --url "https://api.splunk.com/2.0/rest/login/splunk" | jq -r '.data.token')
+        curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME.tgz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"
+
+  build_documentation:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install mkdocs-material
+      - run: mkdocs gh-deploy --force

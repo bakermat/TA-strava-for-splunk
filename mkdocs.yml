@@ -1,0 +1,66 @@
+site_name: Strava Add-on for Splunk
+site_url: https://bakermat.github.io/TA-strava-for-splunk
+site_description: Stay healthy, my friends.
+repo_name: bakermat/TA-strava-for-splunk
+repo_url: https://github.com/bakermat/TA-strava-for-splunk
+edit_uri: ''
+
+theme:
+  name: material
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+      primary: deep orange
+
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+      primary: deep orange
+
+  font:
+    text: Roboto
+    code: Roboto Mono
+  include_search_page: false
+  search_index_only: true
+  language: en
+  features:
+    #- navigation.tabs
+    - navigation.instant
+    - navigation.sections
+    #- navigation.top
+    #- toc.integrate
+
+extra:
+  version: 3.0.1
+
+extra_css:
+  - assets/css/extra.css
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - smarty
+  - meta
+  - toc:
+      permalink: True
+  - attr_list
+
+# Page tree
+nav:
+  - Overview: overview.md
+  - Getting started: getting-started.md
+  - Setup: 
+    - Configuration: setup/configuration.md
+    - Activities: setup/activities.md
+    - Webhook: setup/webhook.md
+  - Integrations: integrations.md
+  - Multiple athletes: multiple-athletes.md
+  - Troubleshooting: troubleshooting.md
+  - Release notes: release-notes.md
