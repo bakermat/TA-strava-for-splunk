@@ -54,7 +54,7 @@ markdown_extensions:
 
 # Page tree
 nav:
-  - Overview: overview.md
+  - Overview: index.md
   - Getting started: getting-started.md
   - Setup: 
     - Configuration: setup/configuration.md
