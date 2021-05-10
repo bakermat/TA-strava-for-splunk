@@ -3,3 +3,4 @@ __pycache__
 local.meta
 local
 *.pyc
+*.pickle

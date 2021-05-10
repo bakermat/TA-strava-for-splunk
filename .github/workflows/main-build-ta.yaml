@@ -12,6 +12,7 @@ env:
 
 jobs:
   publish_artifact:
+    name: Upload artifact to Splunkbase
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2

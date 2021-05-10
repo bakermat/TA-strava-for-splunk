@@ -56,7 +56,6 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         """Converts Strava datetime to epoch timestamp"""
         timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
         epoch = calendar.timegm(timestamp_dt.timetuple())
-        # ts_activity = int(ts_activity)
         return epoch
 
     def get_token(client_id, client_secret, token, renewal):
@@ -86,7 +85,7 @@ def collect_events(helper, ew):  # pylint: disable=invalid-name,too-many-stateme
         """Stores athlete's id, first name, last name, weight and ftp into strava_athlete KV Store collection."""
         url = 'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/storage/collections/data/strava_athlete/batch_save'
         headers = {'Content-Type': 'application/json', 'Authorization': f'Splunk {session_key}'}
-        payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "weight": weight, "ftp": ftp}]
+        payload = [{"_key": athlete_id, "id": athlete_id, "firstname": firstname, "lastname": lastname, "fullname": firstname + " " + lastname, "weight": weight, "ftp": ftp}]
         helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False, use_proxy=False)
 
     def parse_data(data, activity_id, activity_start_date):
