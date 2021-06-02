@@ -1,3 +1,9 @@
+####3.0.2####
+- Added `fullname` to `strava_athlete` KV Store lookup and made it an automatic lookup, adding the `firstname, lastname, fullname` fields.
+- Added `strava_types.csv` CSV lookup (automatic) for prettier activity types, e.g. the `VirtualRide` type becomes `Virtual Ride` using a new `type_full` field for backwards-compatibility.
+- Added `strava_index` macro, which is set to `index=strava` by default.
+- Updated the Sample Dashboard to improve search efficiency.
+
 ####3.0.1####
 - Added support for activities of up to 9125 days old (~25 years).
 - Updated TLS handling of webhook.

@@ -31,14 +31,11 @@ theme:
   search_index_only: true
   language: en
   features:
-    #- navigation.tabs
     - navigation.instant
     - navigation.sections
-    #- navigation.top
-    #- toc.integrate
 
 extra:
-  version: 3.0.1
+  version: 3.0.2
 
 extra_css:
   - assets/css/extra.css
@@ -60,7 +57,7 @@ nav:
     - Configuration: setup/configuration.md
     - Activities: setup/activities.md
     - Webhook: setup/webhook.md
-  - Integrations: integrations.md
+  - Knowledge objects & integrations: integrations.md
   - Multiple athletes: multiple-athletes.md
   - Troubleshooting: troubleshooting.md
   - Release notes: release-notes.md
