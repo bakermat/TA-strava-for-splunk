@@ -51,7 +51,7 @@ jobs:
         SPLUNK_USR: ${{ secrets.SPLUNK_USR }}
         SPLUNK_PWD: ${{ secrets.SPLUNK_PWD }}
       run: |
-        curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME-${{ env.VERSION }}.tar.gz" -F "files[]=@$GITHUB_WORKSPACE/$APP_NAME.tar.gz/$APP_NAME-${{ env.VERSION }}.tar.gz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
+        curl -u $SPLUNK_USR:$SPLUNK_PWD --request POST "https://splunkbase.splunk.com/api/v1/app/$SPLUNK_APP_ID/new_release/" -F "filename=$APP_NAME-${{ env.VERSION }}.tar.gz" -F "files[]=@$GITHUB_WORKSPACE//$APP_NAME-${{ env.VERSION }}.tar.gz/$APP_NAME-${{ env.VERSION }}.tar.gz" -F "splunk_versions=$SPLUNK_VER" -F "visibility=$SPLUNK_VISIBILITY"
         response=$(curl -X GET -u $SPLUNK_USR:$SPLUNK_PWD --url "https://api.splunk.com/2.0/rest/login/splunk" | jq -r '.data.token')
         curl -X POST -H "Authorization: bearer ${response}" -H "Cache-Control: no-cache" -F "app_package=@$APP_NAME-${{ env.VERSION }}.tar.gz" -F "included_tags=cloud" --url "https://appinspect.splunk.com/v1/app/validate"
 
