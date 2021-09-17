@@ -45,7 +45,6 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: TA-strava-for-splunk-${{ env.VERSION }}.tar.gz
         path: ./TA-strava-for-splunk-${{ env.VERSION }}.tar.gz
         retention-days: 5
     - name: Splunk AppInspect Test
