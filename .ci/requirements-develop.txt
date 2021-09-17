@@ -1,3 +1,6 @@
 bandit
 pylint
 requests
+splunk-add-on-ucc-framework
+splunk-packaging-toolkit
+splunk-appinspect

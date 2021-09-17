@@ -7,7 +7,7 @@ on:
 env:
   SPLUNK_APP_ID: 4755
   APP_NAME: 'TA-strava-for-splunk'
-  SPLUNK_VER: '8.0,8.1'
+  SPLUNK_VER: '8.0,8.1,8.2'
   SPLUNK_VISIBILITY: false
 
 jobs:
@@ -26,16 +26,16 @@ jobs:
         # This path is specific to Ubuntu
         path: ~/.cache/pip
         # Look to see if there is a cache hit for the corresponding requirements file
-        key: ${{ runner.os }}-pip-${{ hashFiles('.ci/requirements.txt') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('.ci/requirements-${GITHUB_REF##*/}.txt') }}
         restore-keys: |
           ${{ runner.os }}-pip-
           ${{ runner.os }}-
     - name: Install dependencies
       run: | 
         pip install --upgrade pip
-        pip install -r .ci/requirements-main.txt
+        pip install -r .ci/requirements-${GITHUB_REF##*/}.txt
       # This will extract the artifact to $APP_NAME.tgz/$APP_NAME.tgz
-    - name: Download artifact from develop
+    - name: Download artifact from develop branch
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: develop-build-ta.yaml
