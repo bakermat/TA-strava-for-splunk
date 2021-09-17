@@ -160,10 +160,10 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
         def get_webhook(client_id, client_secret):
             """Gets webhook details"""
             url = 'https://www.strava.com/api/v3/push_subscriptions'
-            params = {
+            payload = {
                 'client_id': client_id,
                 'client_secret': client_secret}
-            response = helper.send_http_request(url, "GET", parameters=params, use_proxy=False)
+            response = helper.send_http_request(url, "GET", payload=payload, use_proxy=False)
 
             try:
                 response.raise_for_status()
