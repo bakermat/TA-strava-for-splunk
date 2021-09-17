@@ -38,12 +38,13 @@ jobs:
       run: ucc-gen --ta-version ${{ env.VERSION }}
     - name: Remove troublesome METADATA file to bypass AppInspect error
       run: rm ./output/TA-strava-for-splunk/lib/charset_normalizer-2.0.5.dist-info/METADATA
+    - name: Set right file permissions
+      run: chmod -R u+rw,g-rwx,o-rwx ./output
     - name: Create Splunk app package
       run: slim package output/TA-strava-for-splunk
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: TA-strava-for-splunk-${{ env.VERSION }}.tar.gz
         path: ./TA-strava-for-splunk-${{ env.VERSION }}.tar.gz
         retention-days: 5
     - name: Splunk AppInspect Test
