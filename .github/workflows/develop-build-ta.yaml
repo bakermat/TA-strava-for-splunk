@@ -1,4 +1,4 @@
-name: Run tests and save package as artifact
+name: Run tests and store artifact
 on: 
   push:
     branches:

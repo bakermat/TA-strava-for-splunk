@@ -11,7 +11,7 @@ import helper_strava_api as hsa
 class StravaApi(hsa.STRAVA_API):
     """Inherits helper_strava_api class and overwrites collect_events() function."""
 
-    def collect_events(helper, ew):  # pylint: disable=no-self-argument,invalid-name,too-many-statements
+    def collect_events(helper, ew):  # pylint: disable=no-self-argument,invalid-name,too-many-statements,too-many-branches
         """Main function to get data into Splunk."""
 
         def clear_checkbox(session_key, stanza):
