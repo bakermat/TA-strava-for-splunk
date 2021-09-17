@@ -14,7 +14,7 @@ class StravaApi(hsa.STRAVA_API):
     def collect_events(helper, ew):
         """Main function to get data into Splunk."""
 
-        def clear_checkbox(session_key, stanza):
+        def clear_checkbox(session_key, stanza):  # pylint: disable=no-self-argument,invalid-name,too-many-statements
             """ Sets the 'reindex_data' value in the REST API to 0 to clear it. Splunk then automatically restarts the input."""
             url = f'https://localhost:8089/servicesNS/nobody/TA-strava-for-splunk/data/inputs/strava_api/{stanza}'
             headers = {'Authorization': f'Splunk {session_key}'}
