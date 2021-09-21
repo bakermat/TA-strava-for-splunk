@@ -36,6 +36,9 @@ jobs:
       run: bandit -r ./package/bin/*.py
     - name: Run ucc-gen
       run: ucc-gen --ta-version ${{ env.VERSION }}
+    - name: Remove troublesome METADATA file to bypass AppInspect error
+      run: |
+        ls -p -- **/charset_normalizer-*/METADATA || xargs rm --
     - name: Set right file permissions
       run: chmod -R u+rw,g-rwx,o-rwx ./output
     - name: Create Splunk app package
