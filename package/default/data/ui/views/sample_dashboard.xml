@@ -1,6 +1,6 @@
 <form version="1.1">
   <search id="basesearch_activities">
-    <query>`strava_index` sourcetype=strava:activities type=$select_activity$ "athlete.id"=$athlete_id$ | fields average_cadence, average_heartrate, average_speed, average_watts, distance, id, elapsed_time, moving_time, name, start_date_local, type, type_full</query>
+    <query>`strava_index` sourcetype=strava:activities type=$select_activity$ "athlete.id"=$athlete_id$ | fields achievement_count, average_cadence, average_heartrate, average_speed, average_watts, distance, id, elapsed_time, kudos_count, total_elevation_gain, moving_time, name, start_date_local, type, type_full</query>
   </search>
   <search id="basesearch_duration">
     <query>`strava_index` sourcetype="strava:activities" type=$select_activity$ "athlete.id"=$athlete_id$ earliest=-1y@w1 latest=now() | fields distance, moving_time</query>
@@ -26,7 +26,7 @@
       </search>
     </input>
     <input type="multiselect" token="select_activity" searchWhenChanged="true">
-      <label>Activity</label>
+      <label>Activity Type</label>
       <choice value="*">ALL</choice>
       <fieldForLabel>type</fieldForLabel>
       <fieldForValue>type</fieldForValue>
@@ -301,23 +301,24 @@ eval distance = distance/1000 * $units$
       <table>
         <title>Activities List</title>
         <search base="basesearch_activities">
-          <query> 
-eval earliest = _time 
+          <query> eval earliest = _time 
 | eval latest = earliest + elapsed_time 
 | eval average_speed = round(average_speed * 3.60 * $units$,1)
-| eval distance = round(distance / 1000,1) * $units$
+| eval distance = round((distance / 1000 * $units$),1)
 | eval average_heartrate = round(average_heartrate)
 | eval average_cadence = round(average_cadence)
 | eval average_watts = round(average_watts)
+| eval moving_time = tostring(moving_time,"duration")
+| eval total_elevation_gain = round(total_elevation_gain * $units$)
 | eval start_date_local = strptime(start_date_local, "%Y-%m-%dT%H:%M:%SZ")
 | eval start_date_local = strftime(start_date_local,"%Y-%m-%d %H:%M:%S")
-| rename start_date_local as Date, name as Name, type_full as Type, distance as Distance, average_speed as Speed, average_heartrate as "Heart Rate", average_cadence as Cadence, average_watts as Power
-| table Date Name Type, Distance, Speed, "Heart Rate", Cadence, Power id earliest latest 
+| table start_date_local, name, type_full, distance, moving_time, average_speed, average_heartrate, average_cadence, average_watts, total_elevation_gain, achievement_count, id, earliest, latest
+| rename achievement_count as Achievements, start_date_local as Date, name as Name, type_full as Type, distance as Distance,average_speed as Speed, average_heartrate as "Heart Rate", average_cadence as Cadence, average_watts as Power, moving_time as "Duration", total_elevation_gain as "Elevation Gain"
 | sort -Date</query>
         </search>
         <option name="drilldown">row</option>
         <option name="refresh.display">progressbar</option>
-        <fields>["Date","Name","Type","Distance","Speed","Heart Rate","Cadence", "Power"]</fields>
+        <fields>["Date","Name","Type","Distance","Duration","Speed","Heart Rate","Cadence","Power","Elevation Gain","Achievements"]</fields>
         <drilldown>
           <set token="id">$row.id$</set>
           <set token="activity_start">$row.earliest$</set>
