@@ -5,8 +5,6 @@ import datetime
 import calendar
 import requests
 
-from simplecrypt import encrypt, decrypt
-
 import helper_strava_api as hsa
 
 
