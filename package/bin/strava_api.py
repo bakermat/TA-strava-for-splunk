@@ -5,6 +5,8 @@ import datetime
 import calendar
 import requests
 
+from simplecrypt import encrypt, decrypt
+
 import helper_strava_api as hsa
 
 
@@ -21,33 +23,34 @@ class StravaApi(hsa.STRAVA_API):
             payload = 'reindex_data=0'
             helper.send_http_request(url, "POST", headers=headers, payload=payload, verify=False, use_proxy=False)
 
-        def get_activities(ts_activity, access_token):
+        def get_activities(ts_activity, token):
             """Gets all activities, 30 per page as per Strava's default."""
-            params = {'after': ts_activity, 'access_token': access_token}
+            headers = {f'Authorization: Bearer {token}'}
+            params = {'after': ts_activity}
             url = "https://www.strava.com/api/v3/activities"
-            response = return_json(url, "GET", parameters=params)
+            response = return_json(url, "GET", headers=headers, parameters=params)
             return response
 
         def get_activity(activity, token):
             """Gets specific activity."""
             url = f'https://www.strava.com/api/v3/activities/{activity}?include_all_efforts=true'
-            params = {'access_token': token}
-            response = return_json(url, "GET", parameters=params, timeout=10)
+            headers = {'Authorization': f'Bearer {token}'}
+            response = return_json(url, "GET", headers=headers, timeout=10)
             return response
 
         def get_activity_stream(token, activity, types, series_type='time', resolution='high'):
             """Gets the activity stream for given activity id."""
             types = ','.join(types)
-            params = {'access_token': token}
             url = f'https://www.strava.com/api/v3/activities/{activity}/streams/{types}&series_type={series_type}&resolution={resolution}&key_by_type='
-            response = return_json(url, "GET", parameters=params, timeout=10)
+            headers = {'Authorization': f'Bearer {token}'}
+            response = return_json(url, "GET", headers=headers, timeout=10)
             return response
 
         def get_athlete(token):
             """Gets details on currently logged in athlete."""
             url = "https://www.strava.com/api/v3/athlete"
-            params = {'access_token': token}
-            response = return_json(url, "GET", parameters=params, timeout=10)
+            headers = {'Authorization': f'Bearer {token}'}
+            response = return_json(url, "GET", headers=headers, timeout=10)
             return response
 
         def get_epoch(timestamp):
@@ -188,7 +191,7 @@ class StravaApi(hsa.STRAVA_API):
         # stanza is the name of the input. This is a unique name and will be used as a checkpoint key to save/retrieve details about an athlete
         stanza = list(helper.get_input_stanza())[0]
         athlete = helper.get_check_point(stanza)
-        helper.log_debug(f'Athlete: {athlete}')
+        # helper.log_debug(f'Athlete: {athlete}')
 
         # if reindex_data checkbox is set, update the start_time to be the one specified and clear the checkbox.
         if helper.get_arg('reindex_data'):
@@ -212,7 +215,6 @@ class StravaApi(hsa.STRAVA_API):
         if expires_at:
             if time.time() >= expires_at:
                 response = get_token(client_id, client_secret, refresh_token, renewal=True)
-                helper.log_debug(f"Access token: {response['access_token']}, refresh token: {response['refresh_token']}")
                 athlete.update({'access_token': response['access_token'], 'refresh_token': response['refresh_token'], 'expires_at': response['expires_at']})
         else:
             response = get_token(client_id, client_secret, access_code, renewal=False)
