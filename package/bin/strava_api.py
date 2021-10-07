@@ -200,8 +200,8 @@ class StravaApi(hsa.STRAVA_API):
                 storage_secret = service.storage_passwords.create(json.dumps(secret), key)
                 return storage_secret
 
-            except Exception:
-                raise
+            except Exception as ex:
+                helper.log_error(ex)
 
         def write_to_splunk(**kwargs):
             """Writes activity to Splunk index."""
