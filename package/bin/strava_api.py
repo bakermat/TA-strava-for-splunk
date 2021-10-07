@@ -261,6 +261,7 @@ class StravaApi(hsa.STRAVA_API):
         if expires_at:
             if time.time() >= expires_at:
                 response = get_token(client_id, client_secret, refresh_token, renewal=True)
+                athlete_oauth = set_athlete_oauth(response)
         else:
             response = get_token(client_id, client_secret, access_code, renewal=False)
             athlete = set_athlete(response)
