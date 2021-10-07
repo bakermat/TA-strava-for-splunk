@@ -1,3 +1,6 @@
+#### 3.2.0
+- Removed secrets from KV Store lookup, now handled using Splunk's passwords store.
+
 #### 3.1.0
 - Added a custom command `weather` in order to get a 3-hour weather report for a location. Returns coordinates, weather description, temperature and wind degrees & speed. Requires an OpenWeatherMap API key to be added under Configuration -> Add-On Settings.
 - Added a panel in the Sample Dashboard to leverage the `weather` command, showing which completed segments within ~5 miles/~8 kilometres currently have a tailwind.
