@@ -223,7 +223,7 @@ class StravaApi(hsa.STRAVA_API):
         try:
             athlete = helper.get_check_point(stanza)
         except Exception as err:
-            helper.log_error(f'Error: {err}. Sleeping 15 seconds in case KV Store is not ready yet.')
+            helper.log_error(f'Error: {err}. Retrying in 15 seconds in case KV Store is not ready yet.')
             time.sleep(15)
             athlete = helper.get_check_point(stanza)
 
