@@ -219,12 +219,12 @@ class StravaApi(hsa.STRAVA_API):
         # stanza is the name of the input. This is a unique name and will be used as a checkpoint key to save/retrieve details about an athlete
         stanza = list(helper.get_input_stanza())[0]
 
-        # Sometimes KV Store isn't ready yet after a Splunk restart, causing the input to fail until tried again at the next interval. Using a try/except to wait 30 secs instead.
+        # Sometimes KV Store isn't ready yet after a Splunk restart causing a TypeError. Wait 15 seconds when that happens and try again.
         try:
             athlete = helper.get_check_point(stanza)
         except Exception as err:
-            helper.log_error(err)
-            time.sleep(30)
+            helper.log_error(f'Error: {err}. Sleeping 15 seconds in case KV Store is not ready yet.')
+            time.sleep(15)
             athlete = helper.get_check_point(stanza)
 
         # Get the OAuth details from the Splunk storage/passwords REST API endpoint
