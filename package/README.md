@@ -4,4 +4,3 @@ The Strava Add-on for Splunk let's you retrieve activity data from Strava's API 
 Documentation: <https://bakermat.github.io/TA-strava-for-splunk>.
 
 This TA is open source and can be found on <https://github.com/bakermat/TA-strava-for-splunk>, please submit any issues or join the discussion there.
-
