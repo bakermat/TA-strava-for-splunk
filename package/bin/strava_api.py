@@ -6,7 +6,7 @@ import calendar
 import requests
 
 import helper_strava_api as hsa
-import splunklib import client
+from splunklib import client
 
 
 class StravaApi(hsa.STRAVA_API):
