@@ -35,7 +35,7 @@ class WeatherSearch(GeneratingCommand):
         url = build_weather_api_url('forecast', self.location, token, 'metric')
 
         # make request
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
 
         try:
             response.raise_for_status()
