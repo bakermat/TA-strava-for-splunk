@@ -12,7 +12,7 @@ from splunklib import client
 class StravaApi(hsa.STRAVA_API):
     """Inherits helper_strava_api class and overwrites collect_events() function."""
 
-    def collect_events(helper, ew):  # pylint: disable=no-self-argument,invalid-name,too-many-statements,too-many-branches
+    def collect_events(helper, ew):  # pylint: disable=broad-except,no-self-argument,invalid-name,too-many-statements,too-many-branches
         """Main function to get data into Splunk."""
 
         def clear_checkbox(session_key, stanza):
@@ -202,7 +202,7 @@ class StravaApi(hsa.STRAVA_API):
                 return storage_secret
 
             except Exception as err:
-                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {err}') from err # pylint: disable=broad-except
+                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {err}') from err
 
 
         def write_to_splunk(**kwargs):
