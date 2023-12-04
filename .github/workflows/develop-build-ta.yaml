@@ -34,7 +34,7 @@ jobs:
         pip install --upgrade pip
         pip install -r .ci/requirements-${GITHUB_REF##*/}.txt
     - name: Lint with pylint
-      run: pylint ./package/bin/strava_*.py --disable=broad-except,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks,import-error
+      run: pylint ./package/bin/strava_*.py --disable=broad-exception-raised,logging-fstring-interpolation,missing-module-docstring,line-too-long,too-many-locals,too-many-nested-blocks,import-error
     - name: Bandit Security Test
       run: bandit -r ./package/bin/*.py
     - name: Run ucc-gen build
