@@ -6,7 +6,7 @@ import calendar
 import requests
 
 import helper_strava_api as hsa
-import splunklib.client as client
+import splunklib import client
 
 
 class StravaApi(hsa.STRAVA_API):
@@ -180,7 +180,7 @@ class StravaApi(hsa.STRAVA_API):
                 'name': name,
                 'ts_activity': 0}
             return athlete
-        
+
         def set_athlete_oauth(response):
             """Returns dict with OAuth details."""
             return {
@@ -201,8 +201,8 @@ class StravaApi(hsa.STRAVA_API):
                 storage_secret = service.storage_passwords.create(json.dumps(secret), key)
                 return storage_secret
 
-            except Exception as e:
-                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {e}')
+            except Exception as err: # pylint: disable=broad-except
+                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {err}') from err
 
 
         def write_to_splunk(**kwargs):
@@ -262,7 +262,7 @@ class StravaApi(hsa.STRAVA_API):
 
         # Check if expires_at token is set and renew token if token expired. Otherwise fetch token with initial access code.
         if expires_at:
-            if (time.time() >= expires_at):
+            if time.time() >= expires_at:
                 response = get_token(client_id, client_secret, refresh_token, renewal=True)
                 athlete_oauth = set_athlete_oauth(response)
         else:

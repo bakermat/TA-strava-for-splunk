@@ -104,7 +104,7 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
                 rest_url = f'https://localhost:8089/services/data/inputs/{modinput}/_reload'
                 headers = {'Authorization': f'Splunk {session_key}'}
 
-                response = requests.get(rest_url, headers=headers, verify=self.SSL_VERIFY)
+                response = requests.get(rest_url, headers=headers, verify=self.SSL_VERIFY, timeout=10)
                 try:
                     response.raise_for_status()
                 except Exception as ex:
@@ -170,8 +170,7 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
             except Exception as ex:
                 helper.log_error(f'Something went wrong: {ex}')
                 return False
-            else:
-                return response.json()
+            return response.json()
 
         # Get global arguments
         stanza = list(helper.get_input_stanza())[0]
