@@ -12,7 +12,7 @@ from splunklib import client
 class StravaApi(hsa.STRAVA_API):
     """Inherits helper_strava_api class and overwrites collect_events() function."""
 
-    def collect_events(helper, ew):  # pylint: disable=broad-except,no-self-argument,invalid-name,too-many-statements,too-many-branches
+    def collect_events(helper, ew):  # pylint: disable=broad-exception-raised,no-self-argument,invalid-name,too-many-statements,too-many-branches
         """Main function to get data into Splunk."""
 
         def clear_checkbox(session_key, stanza):
