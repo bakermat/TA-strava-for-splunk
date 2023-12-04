@@ -1,2 +1,0 @@
-requests
-splunktaucclib==4.2.0
