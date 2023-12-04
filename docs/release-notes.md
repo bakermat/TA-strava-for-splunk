@@ -1,3 +1,7 @@
+#### 3.2.0
+- Moved OAuth details from KV Store to Splunk secrets.
+- Changed GET requests to use header authentication when communicating with Strava.
+
 #### 3.1.1
 - Updated `strava_segments` lookup after changes made by the Strava API.
 - Fixed issue with webhook not loading properly.

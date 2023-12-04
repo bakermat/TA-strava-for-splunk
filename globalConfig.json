@@ -2,7 +2,7 @@
     "meta": {
         "name": "TA-strava-for-splunk",
         "displayName": "Strava for Splunk",
-        "version": "3.1.1alpha",
+        "version": "3.2.0",
         "restRoot": "TA_strava_for_splunk"
     },
     "pages": {
