@@ -1,3 +1,8 @@
+#### 3.1.1
+- Updated `strava_segments` lookup after changes made by the Strava API.
+- Fixed issue with webhook not loading properly.
+- Updated documentation and dashboard to add 'Powered by Strava' and comply with their new API guidelines.
+
 #### 3.1.0
 - Added a custom command `weather` in order to get a 3-hour weather report for a location. Returns coordinates, weather description, temperature and wind degrees & speed. Requires an OpenWeatherMap API key to be added under Configuration -> Add-On Settings.
 - Added a panel in the Sample Dashboard to leverage the `weather` command, showing which completed segments within ~5 miles/~8 kilometres currently have a tailwind.

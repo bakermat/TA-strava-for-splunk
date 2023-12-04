@@ -2,9 +2,8 @@
     "meta": {
         "name": "TA-strava-for-splunk",
         "displayName": "Strava for Splunk",
-        "version": "3.1.0",
-        "restRoot": "TA_strava_for_splunk",
-        "schemaVersion": "0.0.3"
+        "version": "3.1.1alpha",
+        "restRoot": "TA_strava_for_splunk"
     },
     "pages": {
         "configuration": {

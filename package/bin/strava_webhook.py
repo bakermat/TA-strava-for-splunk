@@ -174,11 +174,13 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
                 return response.json()
 
         # Get global arguments
-        port = int(helper.get_arg('port'))
-        verify_token = helper.get_arg('verify_token')
-        cert_file = helper.get_arg('cert_file')
-        callback_url = helper.get_arg('callback_url')
-        key_file = helper.get_arg('key_file')
+        stanza = list(helper.get_input_stanza())[0]
+        dict_port = helper.get_arg('port')
+        port = int(dict_port[stanza])
+        verify_token = helper.get_arg('verify_token')[stanza]
+        cert_file = helper.get_arg('cert_file')[stanza]
+        callback_url = helper.get_arg('callback_url')[stanza]
+        key_file = helper.get_arg('key_file')[stanza]
         client_id = helper.get_global_setting('client_id')
         client_secret = helper.get_global_setting('client_secret')
 

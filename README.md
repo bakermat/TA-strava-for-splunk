@@ -2,3 +2,4 @@ Project files for the [Strava Add-on for Splunk](https://splunkbase.splunk.com/a
 
 The app can be found in the `package` folder. Releases can be found [here](https://github.com/bakermat/TA-strava-for-splunk/releases) or on [Splunkbase](https://splunkbase.splunk.com/app/4755/).
 
+The guide for this app can be found [here](https://bakermat.github.io/TA-strava-for-splunk/).

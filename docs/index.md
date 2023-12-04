@@ -3,3 +3,5 @@ This add-on will retrieve your activities and second-by-second heart rate, caden
 You can get the app on <a href="https://splunkbase.splunk.com/app/4755/" target="_blank">Splunkbase</a>.
 
 For feedback or any issues you encounter, please head to the repo on <a href="https://github.com/bakermat/TA-strava-for-splunk" target="_blank">Github</a>. 
+
+![Image](assets/img/powered_by_strava.png)

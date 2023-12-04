@@ -3,11 +3,14 @@ on:
   push:
     branches:
       - main
+    # Avoid running the CI/CD pipeline when updating the GitHub Actions workflow
+    paths-ignore:
+      - '**/develop-build-ta.yaml'
 
 env:
   SPLUNK_APP_ID: 4755
   APP_NAME: 'TA-strava-for-splunk'
-  SPLUNK_VER: '8.0,8.1,8.2'
+  SPLUNK_VER: '9.1,9.0,8.2,8.1,8.0'
   SPLUNK_VISIBILITY: false
 
 jobs:
