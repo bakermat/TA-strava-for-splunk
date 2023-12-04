@@ -24,7 +24,7 @@ class StravaApi(hsa.STRAVA_API):
 
         def get_activities(ts_activity, token):
             """Gets all activities, 30 per page as per Strava's default."""
-            headers = {f'Authorization: Bearer {token}'}
+            headers = {'Authorization': f'Bearer {token}'}
             params = {'after': ts_activity}
             url = "https://www.strava.com/api/v3/activities"
             response = return_json(url, "GET", headers=headers, parameters=params)
