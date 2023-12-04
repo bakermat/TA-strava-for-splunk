@@ -201,8 +201,8 @@ class StravaApi(hsa.STRAVA_API):
                 storage_secret = service.storage_passwords.create(json.dumps(secret), key)
                 return storage_secret
 
-            except Exception as err: # pylint: disable=broad-except
-                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {err}') from err
+            except Exception as err:
+                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {err}') from err # pylint: disable=broad-except
 
 
         def write_to_splunk(**kwargs):
