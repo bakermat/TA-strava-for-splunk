@@ -6,6 +6,7 @@ import calendar
 import requests
 
 import helper_strava_api as hsa
+import splunklib.client as client
 
 
 class StravaApi(hsa.STRAVA_API):
@@ -56,6 +57,15 @@ class StravaApi(hsa.STRAVA_API):
             timestamp_dt = datetime.datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%SZ")
             epoch = calendar.timegm(timestamp_dt.timetuple())
             return epoch
+
+        def get_secret(session_key, key):
+            # Retrieve the password from the storage/passwords endpoint
+            service = client.connect(token=session_key, app='TA-strava-for-splunk')
+            for storage_password in service.storage_passwords:
+                if storage_password.username == key:
+                    return json.loads(storage_password.content.clear_password)
+            return None
+
 
         def get_token(client_id, client_secret, token, renewal):
             """Get or refresh access token from Strava API."""
@@ -168,11 +178,32 @@ class StravaApi(hsa.STRAVA_API):
             athlete = {
                 'id': response['athlete']['id'],
                 'name': name,
-                'access_token': response['access_token'],
-                'refresh_token': response['refresh_token'],
-                'expires_at': response['expires_at'],
                 'ts_activity': 0}
             return athlete
+        
+        def set_athlete_oauth(response):
+            """Returns dict with OAuth details."""
+            return {
+                "access_token": response['access_token'],
+                "refresh_token": response['refresh_token'],
+                "expires_at": response['expires_at']}
+
+        def store_secret(session_key, key, secret):
+            """Stores OAuth details as Splunk encrypted password in 'key' as dict."""
+            service = client.connect(token=session_key, app='TA-strava-for-splunk')
+
+            try:
+                for storage_password in service.storage_passwords:
+                    if storage_password.username == key:
+                        service.storage_passwords.delete(username=storage_password.username)
+                        break
+
+                storage_secret = service.storage_passwords.create(json.dumps(secret), key)
+                return storage_secret
+
+            except Exception as e:
+                raise Exception(f'An error occurred updating credentials. Please ensure your user account has admin_all_objects and/or list_storage_passwords capabilities. Details: {e}')
+
 
         def write_to_splunk(**kwargs):
             """Writes activity to Splunk index."""
@@ -185,11 +216,27 @@ class StravaApi(hsa.STRAVA_API):
         access_code = helper.get_arg('access_code')
         start_time = helper.get_arg('start_time') or 0
         types = ['time', 'distance', 'latlng', 'altitude', 'velocity_smooth', 'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
+        expires_at = False
 
         # stanza is the name of the input. This is a unique name and will be used as a checkpoint key to save/retrieve details about an athlete
         stanza = list(helper.get_input_stanza())[0]
-        athlete = helper.get_check_point(stanza)
         # helper.log_debug(f'Athlete: {athlete}')
+
+        # Sometimes KV Store isn't ready yet after a Splunk restart causing a TypeError. Wait 15 seconds when that happens and try again.
+        try:
+            athlete = helper.get_check_point(stanza)
+        except Exception as err:
+            helper.log_error(f'Error: {err}. Retrying in 15 seconds in case KV Store is not ready yet.')
+            time.sleep(15)
+            athlete = helper.get_check_point(stanza)
+
+        # Get the OAuth details from the Splunk storage/passwords REST API endpoint
+        athlete_oauth = get_secret(helper.context_meta['session_key'], stanza)
+
+        if athlete_oauth:
+            access_token = athlete_oauth['access_token']
+            refresh_token = athlete_oauth['refresh_token']
+            expires_at = athlete_oauth['expires_at']
 
         # if reindex_data checkbox is set, update the start_time to be the one specified and clear the checkbox.
         if helper.get_arg('reindex_data'):
@@ -203,27 +250,33 @@ class StravaApi(hsa.STRAVA_API):
         if athlete:
             athlete_id = athlete['id']
             athlete_name = athlete['name']
-            expires_at = athlete['expires_at']
-            refresh_token = athlete['refresh_token']
-        else:
-            expires_at = False
-            refresh_token = False
+            # If 'access_token' in athlete, it's from a pre-3.2 install. Get its value and remove it, so it can be stored as a Splunk secret and be backwards-compatible.
+            if 'access_token' in athlete and not athlete_oauth:
+                access_token = athlete['access_token']
+                refresh_token = athlete['refresh_token']
+                expires_at = athlete['expires_at']
+                athlete_oauth = {"access_token": access_token, "refresh_token": refresh_token, "expires_at": expires_at}
+                athlete.pop('access_token')
+                athlete.pop('refresh_token')
+                athlete.pop('expires_at')
 
         # Check if expires_at token is set and renew token if token expired. Otherwise fetch token with initial access code.
         if expires_at:
-            if time.time() >= expires_at:
+            if (time.time() >= expires_at):
                 response = get_token(client_id, client_secret, refresh_token, renewal=True)
-                helper.log_debug(f"Access token: {response['access_token']}, refresh token: {response['refresh_token']}")
-                athlete.update({'access_token': response['access_token'], 'refresh_token': response['refresh_token'], 'expires_at': response['expires_at']})
+                athlete_oauth = set_athlete_oauth(response)
         else:
             response = get_token(client_id, client_secret, access_code, renewal=False)
             athlete = set_athlete(response)
             athlete_id = athlete['id']
             athlete_name = athlete['name']
+            athlete_oauth = set_athlete_oauth(response)
 
+        # Store athlete data in checkpoint and OAuth data in Splunk storage/passwords endpoint
         helper.save_check_point(stanza, athlete)
+        store_secret(helper.context_meta['session_key'], stanza, athlete_oauth)
 
-        access_token = athlete['access_token']
+        access_token = athlete_oauth['access_token']
         athlete_detail = get_athlete(access_token)
         athlete_firstname = athlete_detail['firstname']
         athlete_lastname = athlete_detail['lastname']

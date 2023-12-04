@@ -13,7 +13,8 @@ class STRAVA_WEBHOOK(ucc.BaseModInput):
 
     def get_scheme(self):
         scheme = super(STRAVA_WEBHOOK, self).get_scheme()
-        scheme.description = 'Strava Webhook'
+        scheme.title = ("Strava Webhook")
+        scheme.description = 'Listens for data coming in via the Strava webhook.'
         scheme.use_external_validation = True
         scheme.streaming_mode_xml = True
 

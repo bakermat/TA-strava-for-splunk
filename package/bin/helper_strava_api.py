@@ -14,7 +14,7 @@ class STRAVA_API(ucc.BaseModInput):
     def get_scheme(self):
         scheme = super(STRAVA_API, self).get_scheme()
         scheme.title = ("Strava Activities")
-        scheme.description = 'Strava Activities'
+        scheme.description = 'Retrieves Strava activity data using the Strava API.'
         scheme.use_external_validation = True
         scheme.streaming_mode_xml = True
         scheme.use_single_instance = False
