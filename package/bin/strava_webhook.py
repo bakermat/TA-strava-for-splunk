@@ -44,12 +44,17 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
                     helper.log_info(f'Incoming POST from {self.client_address[0]}: {message}')
 
                     aspect_type = message['aspect_type']
+                    helper.log_info(f'aspect_type: {aspect_type}')
                     object_id = message['object_id']
+                    helper.log_info(f'object_id: {object_id}')
                     object_type = message['object_type']
+                    helper.log_info(f'object_type: {object_type}')
                     # make owner_id a str to avoid issues with athlete_checkpoint dict
                     owner_id = str(message['owner_id'])
+                    helper.log_info(f'owner_id: {owner_id}')
 
                     athlete_checkpoint = helper.get_check_point("webhook_updates") or {}
+                    helper.log_info(f'webhooks_updates checkpoint: {athlete_checkpoint}')
 
                     # We only care about activity updates. New activities are pulled in automatically as strava_api input restarts.
                     if aspect_type == 'update' and object_type == 'activity':
@@ -63,10 +68,14 @@ class StravaWebhook(hsw.STRAVA_WEBHOOK):
                         helper.log_debug(f'webhooks_updates checkpoint: {helper.get_check_point("webhook_updates")}')
 
                     # Send data to Splunk
+                    helper.log_info(f'original message: {message}')
                     data = json.dumps(message)
+                    helper.log_info(f'message being sent to Splunk: {message}')
                     event = helper.new_event(source=helper.get_input_type(), index=helper.get_output_index(), sourcetype=helper.get_sourcetype(), data=data)
                     ew.write_event(event)
 
+                    helper.log_info(f'Sending empty response to Strava API')
+                    
                     # Strava API expects a 200 response
                     self.write_empty_response(200)
 

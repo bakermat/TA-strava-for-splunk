@@ -8,7 +8,7 @@
   <label>Sample Dashboard</label>
   <description>This dashboard serves as an example on how to get started with Strava, clone or modify as desired. This dashboard uses the Location Tracker - Custom Visualization app to show the route on a map, install that app if required.</description>
   <fieldset submitButton="false" autoRun="false">
-    <html><img src="https://bakermat.github.io/TA-strava-for-splunk/assets/img/powered_by_strava.png" width="200px" height="auto"></img></html>
+    <html><img src="/static/app/TA-strava-for-splunk/powered_by_strava.png" width="200px" height="auto"></img></html>
     <input type="time" token="top_timepicker" searchWhenChanged="true">
       <label></label>
       <default>
