@@ -18,13 +18,13 @@ jobs:
     name: Upload artifact to Splunkbase
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@main
     - name: Set up Python 3.7
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@main
       with:
         python-version: 3.7
     - name: Cache pip
-      uses: actions/cache@v2
+      uses: actions/cache@main
       with:
         # This path is specific to Ubuntu
         path: ~/.cache/pip
@@ -62,8 +62,8 @@ jobs:
     name: Build documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@main
+      - uses: actions/setup-python@main
         with:
           python-version: 3.x
       - run: pip install mkdocs-material
